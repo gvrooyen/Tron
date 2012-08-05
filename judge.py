@@ -2,6 +2,7 @@ __author__ = 'gvrooyen'
 
 import random
 
+#noinspection PyStringFormat
 class Judge(object):
 
     def __init__(self, state_file_red, state_file_blue, world_size = 30):
