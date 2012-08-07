@@ -93,6 +93,30 @@ class World(object):
     def state(self, pos):
         return self.world[pos[0]][pos[1]]
 
+    def save(self, filename, player=BLUE):
+
+        OWN_WALL = BLUE_WALL if player == BLUE else RED_WALL
+        OTHER_WALL = RED_WALL if player == BLUE else BLUE_WALL
+        OWN = player
+        OTHER = RED if player == BLUE else RED
+
+        with open(filename, 'w') as f:
+            for x in xrange(0, self.world_size):
+                for y in xrange(0, self.world_size):
+                    f.write("%d %d " % (x, y))
+                    if self.world[x][y] == EMPTY:
+                        f.write("Clear\n")
+                    elif self.world[x][y] == OWN:
+                        f.write("You\n")
+                    elif self.world[x][y] == OTHER:
+                        f.write("Opponent\n")
+                    elif self.world[x][y] == OWN_WALL:
+                        f.write("YourWall\n")
+                    elif self.world[x][y] == OTHER_WALL:
+                        f.write("OpponentWall\n")
+                    else:
+                        raise ValueError("Unknown world element type at (%d,%d): %s" % (x,y,str(self.world[x][y])))
+
 
 class Strategy(object):
     """Abstract base class for player strategies."""

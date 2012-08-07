@@ -3,6 +3,8 @@ __author__ = 'gvrooyen'
 import argparse
 import judge
 import logging
+from constants import *
+import subprocess
 
 def file_exists(filename):
     """Returns True if the file with the specified filename exists."""
@@ -47,12 +49,17 @@ if __name__ == '__main__':
         exit(1)
 
     # Create the empty state files
-    j = judge.Judge(args.statefile1, args.statefile2)
+    j = judge.Judge()
     winner = None
 
     while not winner:
         try:
-            winner = j.adjudicate()
+            j.world.save(args.statefile1, player=BLUE)
+            subprocess.check_call([args.player1, args.statefile1])
+            j.adjudicate(args.statefile1)
+            j.world.save(args.statefile2, player=RED)
+            subprocess.check_call([args.player2. args.statefile2])
+            j.adjudicate(args.statefile2)
         except:
             logger.error("Error while adjudicating the state files.")
             exit(1)
