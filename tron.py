@@ -1,7 +1,7 @@
 __author__ = 'gvrooyen'
 
 from constants import *
-
+import random
 
 class Position(object):
     """Position on spherical coordinates."""
@@ -123,6 +123,27 @@ class Strategy(object):
 
 
     def move(self, world):
-        """Perform the optimal move for this strategy, based on the world state."""
+        """
+        Perform the optimal move for this strategy, based on the world state.
 
+        The default (dummy/reference) strategy is to make a random valid move.
+        """
+
+        moves = [NORTH, SOUTH, EAST, WEST]
+        random.shuffle(moves)
+        pos = world.pos_player
+
+        for m in moves:
+            if (m == NORTH) and (not pos.at_north_pole()) and (world.state(pos.north()) == None):
+                pos.go_north()
+                break
+            elif (m == SOUTH) and (not pos.at_south_pole()) and (world.state(pos.south()) == None):
+                world.pos_player.go_south()
+                break
+            elif (m == EAST) and (world.state(pos.east()) == None):
+                world.pos_player.go_east()
+                break
+            elif (m == WEST) and (world.state(pos.west()) == None):
+                world.pos_player.go_west()
+                break
 
