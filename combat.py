@@ -48,7 +48,14 @@ if __name__ == '__main__':
 
     # Create the empty state files
     j = judge.Judge(args.statefile1, args.statefile2)
+    winner = None
 
-    if j.validate():
-        pass
-    
+    while not winner:
+        try:
+            winner = j.adjudicate()
+        except:
+            logger.error("Error while adjudicating the state files.")
+            exit(1)
+
+    logger.info("The winner is Player %d!" % winner)
+
