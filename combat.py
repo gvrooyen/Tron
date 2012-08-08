@@ -56,10 +56,10 @@ if __name__ == '__main__':
         try:
             j.world.save(args.statefile1, player=BLUE)
             subprocess.check_call([args.player1, args.statefile1])
-            j.adjudicate(args.statefile1)
+            winner = j.adjudicate(args.statefile1)
             j.world.save(args.statefile2, player=RED)
             subprocess.check_call([args.player2. args.statefile2])
-            j.adjudicate(args.statefile2)
+            winner = j.adjudicate(args.statefile2)
         except:
             logger.error("Error while adjudicating the state files.")
             exit(1)
