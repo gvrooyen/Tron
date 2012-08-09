@@ -96,7 +96,43 @@ class World(object):
                         self.pos_opponent = Position((int(x),int(y)), world_size)
 
     def state(self, pos):
-        return self.world[pos[0]][pos[1]]
+        if pos:
+            return self.world[pos[0]][pos[1]]
+        else:
+            return None
+
+    def set_state(self, pos, state):
+        self.world[pos[0]][pos[1]] = state
+
+    def move_player(self, pos, opponent=False):
+        if opponent:
+            self.set_state(pos, OPPONENT)
+            self.pos_opponent = pos
+        else:
+            self.set_state(pos, PLAYER)
+            self.pos_player = pos
+
+    def liberties(self, opponent=False):
+        """
+        Count the number of liberties that the player (or opponent) has available. A liberty is defined as a clear
+        space adjacent to the current player (opponent) position.
+        """
+        if opponent:
+            pos = self.pos_opponent
+        else:
+            pos = self.pos_player
+
+        result = 0
+        if world.state(pos.north()) == EMPTY:
+            result += 1
+        if world.state(pos.south()) == EMPTY:
+            result += 1
+        if world.state(pos.east()) == EMPTY:
+            result += 1
+        if world.state(pos.west()) == EMPTY:
+            result += 1
+
+        return result
 
     def save(self, filename, player=BLUE):
 

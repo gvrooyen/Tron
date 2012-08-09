@@ -25,11 +25,11 @@ class Judge(object):
         for x in xrange(0, world_size):
             for y in xrange(0, world_size):
                 if (x,y) == blue:
-                    self.world[x][y] = BLUE
+                    self.world.set_state((x,y), BLUE)
                 elif (x,y) == red:
-                    self.world[x][y] = RED
+                    self.world.set_state((x,y), RED)
                 else:
-                    self.world[x][y] = EMPTY
+                    self.world.set_state((x,y), EMPTY)
 
     def adjudicate(self, statefile, new_move = True):
         """
@@ -72,7 +72,12 @@ class Judge(object):
                         # Nothing has changed
                         pass
                     else:
-                        if state_update:
+                        if not new_move:
+                            raise StateFileException("Game state file is inconsistent with internal world state " +
+                                "at (%d,%d) at line %d." % (x,y,line_no))
+                        elif state != PLAYER:
+                            raise StateFileException("Unexpected state change at (%d,%d) at line %d." % (x,y,line_no))
+                        elif state_update:
                             # An update of a previously empty state has already been done. This is not legal (the
                             # player may only move to one new position)
                             raise StateFileException("Too many changes to the player state: (%d,%d) at line %d."
@@ -80,15 +85,22 @@ class Judge(object):
 
                         # Firstly, verify that this is a valid position to have changed, i.e. that the last player
                         # position is adjacent.
-                        raise NotImplementedError()
+                        if not self.world.pos_player.is_adjacent((x,y)):
+                            raise StateFileException("Player moved to a non-adjacent position from (%d,%d) to " +
+                              "(%d,%d) at line %d" % (self.world.pos_player + (x,y,line_no)))
+
+                        old_player_pos = self.world.pos_player
+                        new_player_pos = (x,y)
+
                 elif self.world.state((x,y)) == PLAYER:
-                    if state == PLAYER:
+                    if (state == PLAYER) and new_move:
                         raise StateFileException("Player hasn't made a move at (%d,%d) at line %d." % (x,y,line_no))
                     elif state == OPPONENT:
                         raise StateFileException("Unexpected replacement of player by opponent at (%d,%d) at line %d." %
                           (x,y,line_no))
-                    elif state == PLAYER_WALL:
-                        raise NotImplementedError()
+                    elif (state == PLAYER_WALL) and (not new_move):
+                        raise StateFileException("Unexpected replacement of player by wall at (%d,%d) at line %d." %
+                          (x,y,line_no))
                     elif state == OPPONENT_WALL:
                         raise StateFileException("Unexpected replacement of player by opponent wall at (%d,%d) " +
                             "at line %d." % (x,y,line_no))
@@ -96,8 +108,69 @@ class Judge(object):
                         raise StateFileException("Unknown state at (%d,%d)." % (x,y))
                 elif (self.world.state((x,y)) == OPPONENT) and (state != OPPONENT):
                     raise StateFileException("Opponent's position cannot change after a player's turn at " +
-                                             " (%d,%d)." % (x,y))
+                                             " (%d,%d) at line %d." % (x,y,line_no))
                 elif (((self.world.state((x,y)) == PLAYER_WALL) and (state != PLAYER_WALL)) or
                       ((self.world.state((x,y)) == OPPONENT_WALL) and (state != OPPONENT_WALL))):
-                    raise StateFileException("Walls may not be modified at (%d,%d)." % (x,y))
+                    raise StateFileException("Walls may not be modified at (%d,%d) at line %d." % (x,y,line_no))
 
+            # After the entire state file has been read and checked, update the player position, and check that
+            # the old player position has been replaced by a wall
+
+            self.world.move_player(new_player_pos)
+
+            if self.world.state(*old_player_pos) != PLAYER_WALL:
+                raise StateFileException("Previous player position at (%d,%d) should be replaced by a player wall." %
+                    (old_player_pos + (line_no,)))
+
+            # Next, do a few sanity checks, such as that there is only one player and one opponent, and that they
+            # have the same number of walls (or one more for the player that has just moved).
+
+            player_count = 0
+            opponent_count = 0
+            player_wall_count = 0
+            opponent_wall_count = 0
+
+            for x in xrange(0, self.world_size):
+                for y in xrange(0, self.world_size):
+                    state = self.world.state((x,y))
+                    if state == PLAYER:
+                        player_count += 1
+                    elif state == OPPONENT:
+                        opponent_count += 1
+                    elif state == PLAYER_WALL:
+                        player_wall_count += 1
+                    elif state == OPPONENT_WALL:
+                        opponent_wall_count += 1
+
+            if player_count != 1:
+                raise StateFileException("Only one player position may be specified (there are %d)." % player_count)
+            if opponent_count != 1:
+                raise StateFileException("Only one opponent position may be specified (there are %d)." % opponent_count)
+            if ((new_move and (player_wall_count - opponent_wall_count != 1)) or
+                ((not new_move) and (player_wall_count != opponent_wall_count))):
+                raise StateFileException("Imbalance between player and opponent's number of walls.")
+
+            # Finally, check whether we have a winner, by seeing whether either player has zero liberties left.
+
+            player_liberties = self.world.liberties()
+            opponent_liberties = self.world.liberties(opponent=True)
+
+            if new_move:
+                # If the player has just made a move, first check to see if the opponent now has zero liberties left.
+                # If so, the player wins (even if he himself has zero liberties left, because the opponent is forced
+                # into defeat first). However, if the player has zero liberties left, but the opponent can still make
+                # a move, the opponent wins.
+                if opponent_liberties == 0:
+                    return PLAYER
+                elif player_liberties == 0:
+                    return OPPONENT
+            else:
+                if (player_liberties == 0) and (opponent_liberties == 0):
+                    raise StateFileException("Victory state unresolvable without knowing who made the last move.")
+                elif (opponent_liberties == 0):
+                    return PLAYER
+                elif (player_liberties == 0):
+                    return OPPONENT
+
+            # No winner yet
+            return None
