@@ -10,24 +10,26 @@ class StateFileException(Exception):
 #noinspection PyStringFormat
 class Judge(object):
 
-    def __init__(self, world_size = 30):
+    def __init__(self, pos_blue = None, pos_red = None, world_size = 30):
 
         self.world_size = world_size
 
-        blue = (random.randint(0, world_size-1), random.randint(0, world_size-1))
-        red = blue
-        while red == blue:
-            red = (random.randint(0, world_size-1), random.randint(0, world_size-1))
+        if not pos_blue:
+            pos_blue = (random.randint(0, world_size-1), random.randint(0, world_size-1))
+        if not pos_red:
+            pos_red = pos_blue
+        while pos_red == pos_blue:
+            pos_red = (random.randint(0, world_size-1), random.randint(0, world_size-1))
 
         # Start with an empty world
         self.world = tron.World(world_size=world_size)
 
         for x in xrange(0, world_size):
             for y in xrange(0, world_size):
-                if (x,y) == blue:
-                    self.world.set_state((x,y), BLUE)
-                elif (x,y) == red:
-                    self.world.set_state((x,y), RED)
+                if (x,y) == pos_blue:
+                    self.world.move_blue((x,y))
+                elif (x,y) == pos_red:
+                    self.world.move_red((x,y))
                 else:
                     self.world.set_state((x,y), EMPTY)
 
@@ -59,7 +61,7 @@ class Judge(object):
             line_no = 0
             for line in f:
                 line_no += 1
-                (sx,sy,sstate) = line.split(' ')
+                (sx,sy,sstate) = line.rstrip().split(' ')
                 x = int(sx)
                 y = int(sy)
                 state = STATE_DICT[sstate.lower()]
@@ -93,8 +95,9 @@ class Judge(object):
                         new_player_pos = (x,y)
 
                 elif self.world.state((x,y)) == PLAYER:
-                    if (state == PLAYER) and new_move:
-                        raise StateFileException("Player hasn't made a move at (%d,%d) at line %d." % (x,y,line_no))
+                    if (state == PLAYER):
+                        if new_move:
+                            raise StateFileException("Player hasn't made a move at (%d,%d) at line %d." % (x,y,line_no))
                     elif state == OPPONENT:
                         raise StateFileException("Unexpected replacement of player by opponent at (%d,%d) at line %d." %
                           (x,y,line_no))
@@ -116,11 +119,12 @@ class Judge(object):
             # After the entire state file has been read and checked, update the player position, and check that
             # the old player position has been replaced by a wall
 
-            self.world.move_player(new_player_pos)
+            if new_player_pos:
+                self.world.move_player(new_player_pos)
 
-            if self.world.state(*old_player_pos) != PLAYER_WALL:
-                raise StateFileException("Previous player position at (%d,%d) should be replaced by a player wall." %
-                    (old_player_pos + (line_no,)))
+                if self.world.state(*old_player_pos) != PLAYER_WALL:
+                    raise StateFileException("Previous player position at (%d,%d) should be replaced by " +
+                                             "a player wall." % (old_player_pos + (line_no,)))
 
             # Next, do a few sanity checks, such as that there is only one player and one opponent, and that they
             # have the same number of walls (or one more for the player that has just moved).

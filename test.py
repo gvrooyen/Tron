@@ -2,8 +2,10 @@ __author__ = 'gvrooyen'
 
 import unittest
 import tron
+import judge
+from constants import *
 
-class TestPosition(unittest.TestCase):
+class TestTron(unittest.TestCase):
     def test_movement(self):
         P = tron.Position((10,10))
         self.assertEqual(P.north(), (10,9))
@@ -32,7 +34,11 @@ class TestPosition(unittest.TestCase):
         self.assertFalse(P.at_north_pole())
         self.assertTrue(P.is_adjacent((0,29)))
 
-
+class TestStateFile(unittest.TestCase):
+    def test_adjudication(self):
+        J = judge.Judge(pos_red=(10,10), pos_blue=(20,20))
+        J.world.save('blue.state', player=BLUE)
+        self.assertEqual(J.adjudicate('blue.state', new_move=False), None)
 
 
 if __name__ == '__main__':

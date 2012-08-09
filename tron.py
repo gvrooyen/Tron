@@ -94,6 +94,9 @@ class World(object):
                         self.pos_player = Position((int(x),int(y)), world_size)
                     elif s == 'opponent':
                         self.pos_opponent = Position((int(x),int(y)), world_size)
+        else:
+            self.pos_player = None
+            self.pos_opponent = None
 
     def state(self, pos):
         if pos:
@@ -102,7 +105,8 @@ class World(object):
             return None
 
     def set_state(self, pos, state):
-        self.world[pos[0]][pos[1]] = state
+        if pos:
+            self.world[pos[0]][pos[1]] = state
 
     def move_player(self, pos, opponent=False):
         if opponent:
@@ -111,6 +115,12 @@ class World(object):
         else:
             self.set_state(pos, PLAYER)
             self.pos_player = pos
+
+    def move_blue(self, pos):
+        self.move_player(pos)
+
+    def move_red(self, pos):
+        self.move_player(pos, opponent=True)
 
     def liberties(self, opponent=False):
         """
@@ -123,13 +133,13 @@ class World(object):
             pos = self.pos_player
 
         result = 0
-        if self.state(pos.north()) == EMPTY:
+        if self.state(Position(pos).north()) == EMPTY:
             result += 1
-        if self.state(pos.south()) == EMPTY:
+        if self.state(Position(pos).south()) == EMPTY:
             result += 1
-        if self.state(pos.east()) == EMPTY:
+        if self.state(Position(pos).east()) == EMPTY:
             result += 1
-        if self.state(pos.west()) == EMPTY:
+        if self.state(Position(pos).west()) == EMPTY:
             result += 1
 
         return result
