@@ -10,6 +10,8 @@ class Position(object):
         self.pos = pos
         self.world_size = world_size
 
+        # TODO: Assert that pos has valid world coordinates
+
     def north(self):
         """Returns the coordinates north of the current position, or None if it's the north pole."""
 
@@ -21,7 +23,7 @@ class Position(object):
     def south(self):
         """Returns the coordinates south of the specified position, or None if it's the south pole."""
 
-        if pos[1] == self.world_size - 1:
+        if self.pos[1] == self.world_size - 1:
             return None
         else:
             return (self.pos[0], self.pos[1]+1)
@@ -29,24 +31,24 @@ class Position(object):
     def east(self):
         """Returns the coordinates east of the specified position."""
 
-        if pos[0] == self.world_size - 1:
-            return 0
+        if self.pos[0] == self.world_size - 1:
+            return (0, self.pos[1])
         else:
             return (self.pos[0]+1, self.pos[1])
 
     def west(self):
         """Returns the coordinates west of the specified position."""
 
-        if pos[0] == 0:
-            return self.world_size - 1
+        if self.pos[0] == 0:
+            return (self.world_size - 1, self.pos[1])
         else:
             return (self.pos[0]-1, self.pos[1])
 
     def at_north_pole(self):
-        return pos[1] == 0
+        return self.pos[1] == 0
 
     def at_south_pole(self):
-        return pos[1] == self.world_size
+        return self.pos[1] == self.world_size - 1
 
     def go_north(self):
         new_pos = north()
@@ -67,6 +69,9 @@ class Position(object):
 
     def go_east(self):
         self.pos = east()
+
+    def is_adjacent(self, pos):
+        return ((self.west() == pos) or (self.east() == pos) or (self.north() == pos) or (self.south() == pos))
 
 
 class World(object):
