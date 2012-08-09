@@ -51,24 +51,24 @@ class Position(object):
         return self.pos[1] == self.world_size - 1
 
     def go_north(self):
-        new_pos = north()
+        new_pos = self.north()
         if new_pos:
             self.pos = new_pos
         else:
             raise RuntimeError("Cannot move north from the north pole.")
 
     def go_south(self):
-        new_pos = south()
+        new_pos = self.south()
         if new_pos:
             self.pos = new_pos
         else:
             raise RuntimeError("Cannot move north from the north pole.")
 
     def go_west(self):
-        self.pos = west()
+        self.pos = self.west()
 
     def go_east(self):
-        self.pos = east()
+        self.pos = self.east()
 
     def is_adjacent(self, pos):
         return ((self.west() == pos) or (self.east() == pos) or (self.north() == pos) or (self.south() == pos))
@@ -123,13 +123,13 @@ class World(object):
             pos = self.pos_player
 
         result = 0
-        if world.state(pos.north()) == EMPTY:
+        if self.state(pos.north()) == EMPTY:
             result += 1
-        if world.state(pos.south()) == EMPTY:
+        if self.state(pos.south()) == EMPTY:
             result += 1
-        if world.state(pos.east()) == EMPTY:
+        if self.state(pos.east()) == EMPTY:
             result += 1
-        if world.state(pos.west()) == EMPTY:
+        if self.state(pos.west()) == EMPTY:
             result += 1
 
         return result
