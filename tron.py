@@ -12,6 +12,9 @@ class Position(object):
 
         # TODO: Assert that pos has valid world coordinates
 
+    def __getitem__(self, item):
+        return self.pos[item]
+
     def north(self):
         """Returns the coordinates north of the current position, or None if it's the north pole."""
 
@@ -86,7 +89,7 @@ class World(object):
         if state_file:
             with open(state_file) as f:
                 for line in f:
-                    (x,y,state) = line.split(' ')
+                    (x,y,state) = line.rstrip().split(' ')
 
                     s = state.lower()
                     self.world[int(x)][int(y)] = STATE_DICT[s]
@@ -110,9 +113,11 @@ class World(object):
 
     def move_player(self, pos, opponent=False):
         if opponent:
+            self.set_state(self.pos_opponent, OPPONENT_WALL)
             self.set_state(pos, OPPONENT)
             self.pos_opponent = pos
         else:
+            self.set_state(self.pos_player, PLAYER_WALL)
             self.set_state(pos, PLAYER)
             self.pos_player = pos
 
@@ -149,7 +154,7 @@ class World(object):
         OWN_WALL = BLUE_WALL if player == BLUE else RED_WALL
         OTHER_WALL = RED_WALL if player == BLUE else BLUE_WALL
         OWN = player
-        OTHER = RED if player == BLUE else RED
+        OTHER = RED if player == BLUE else BLUE
 
         with open(filename, 'w') as f:
             for x in xrange(0, self.world_size):
