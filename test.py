@@ -6,7 +6,6 @@ import judge
 import shutil
 from constants import *
 import random
-import logging
 
 class TestTron(unittest.TestCase):
     def test_movement(self):
