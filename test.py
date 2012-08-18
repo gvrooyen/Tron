@@ -6,6 +6,7 @@ import judge
 import shutil
 from constants import *
 import random
+import logging
 
 class TestTron(unittest.TestCase):
     def test_movement(self):
@@ -103,3 +104,9 @@ class TestStateFile(unittest.TestCase):
 
         self.assertNotEqual(winner, None)
 
+        if winner == BLUE:
+            print("BLUE WINS!")
+        else:
+            print("RED WINS!")
+        print("BLUE: " + str(J.trace_blue))
+        print("RED:  " + str(J.trace_red))

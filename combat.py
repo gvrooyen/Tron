@@ -29,7 +29,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logger = logging.getLogger(__name__)
-    logger.addHanddler(logging.StreamHandler)
+    logger.addHandler(logging.StreamHandler)
 
     if args.debug:
         logger.setLevel(logging.DEBUG)

@@ -33,6 +33,9 @@ class Judge(object):
                 else:
                     self.world.set_state((x,y), EMPTY)
 
+        self.trace_blue = [pos_blue]
+        self.trace_red = [pos_red]
+
     def adjudicate(self, statefile, new_move = None):
         """
         Analyse the statefile, to check that it is consistent with the current world state (and raise an
@@ -64,6 +67,7 @@ class Judge(object):
             OTHER_WALL = RED_WALL
             own_position = self.world.pos_player
             other_position = self.world.pos_opponent
+            trace = self.trace_blue
         else:
             OWN = RED
             OTHER = BLUE
@@ -72,6 +76,7 @@ class Judge(object):
             own_position = self.world.pos_opponent
             other_position = self.world.pos_player
             new_wall = False
+            trace = self.trace_red
 
         with open(statefile) as f:
             line_no = 0
@@ -143,6 +148,7 @@ class Judge(object):
                 if self.world.state(old_player_pos) != OWN_WALL:
                     raise StateFileException(("Previous player position at (%d,%d) should be replaced by " +
                                               "a player wall.") % (old_player_pos))
+                trace.append(new_player_pos)
 
             # Next, do a few sanity checks, such as that there is only one player and one opponent, and that they
             # have the same number of walls (or one more for the player that has just moved).
