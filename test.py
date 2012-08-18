@@ -3,7 +3,9 @@ __author__ = 'gvrooyen'
 import unittest
 import tron
 import judge
+import shutil
 from constants import *
+import random
 
 class TestTron(unittest.TestCase):
     def test_movement(self):
@@ -80,4 +82,24 @@ class TestStateFile(unittest.TestCase):
             self.fail("Winning condition not detected")
 
         self.assertEqual(winner, RED)
+
+    def test_basic_strategy(self):
+        random.seed(0)
+        J = judge.Judge()
+        J.world.save('game.state', player=BLUE)
+        self.assertEqual(J.adjudicate('game.state', new_move=None), None)
+        winner = None
+        player = BLUE
+        while (winner == None):
+            player = RED if player == BLUE else BLUE
+            shutil.copyfile('game.state', 'game.state.bak')
+            J.world.save('game.state', player=player)
+            W = tron.World('game.state')
+            S = tron.Strategy()
+            S.move(W)
+            shutil.copyfile('game.state', 'game.state.bak')
+            W.save('game.state')
+            winner = J.adjudicate('game.state', new_move=player)
+
+        self.assertNotEqual(winner, None)
 

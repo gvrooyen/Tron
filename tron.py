@@ -2,6 +2,10 @@ __author__ = 'gvrooyen'
 
 from constants import *
 import random
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler)
 
 class Position(object):
     """Position on spherical coordinates."""
@@ -65,7 +69,7 @@ class Position(object):
         if new_pos:
             self.pos = new_pos
         else:
-            raise RuntimeError("Cannot move north from the north pole.")
+            raise RuntimeError("Cannot move south from the south pole.")
 
     def go_west(self):
         self.pos = self.west()
@@ -202,7 +206,7 @@ class Strategy(object):
 
 
 
-    def move(self, world):
+    def move(self, world, debug=False):
         """
         Perform the optimal move for this strategy, based on the world state.
 
@@ -211,11 +215,11 @@ class Strategy(object):
 
         moves = [NORTH, SOUTH, EAST, WEST]
         random.shuffle(moves)
-        pos = world.pos_player
+        pos = Position(world.pos_player.pos)
 
         for m in moves:
             if (m == NORTH) and (not pos.at_north_pole()) and (world.state(pos.north()) == None):
-                pos.go_north()
+                world.pos_player.go_north()
                 break
             elif (m == SOUTH) and (not pos.at_south_pole()) and (world.state(pos.south()) == None):
                 world.pos_player.go_south()
@@ -226,4 +230,9 @@ class Strategy(object):
             elif (m == WEST) and (world.state(pos.west()) == None):
                 world.pos_player.go_west()
                 break
+        if debug:
+            logger.debug(pos)
+
+        world.set_state(world.pos_player, PLAYER)
+        world.set_state(pos, PLAYER_WALL)
 

@@ -71,6 +71,7 @@ class Judge(object):
             OTHER_WALL = BLUE_WALL
             own_position = self.world.pos_opponent
             other_position = self.world.pos_player
+            new_wall = False
 
         with open(statefile) as f:
             line_no = 0
