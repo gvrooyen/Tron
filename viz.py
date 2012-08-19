@@ -1,22 +1,17 @@
 __author__ = 'gvrooyen'
 
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_trace(world_size=30):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d', aspect='equal')
-
-    u = np.linspace(0, 2 * np.pi, world_size*10)
-    v = np.linspace(0, np.pi, world_size*10)
-
-    x = 10 * np.outer(np.cos(u), np.sin(v))
-    y = 10 * np.outer(np.sin(u), np.sin(v))
-    z = 10 * np.outer(np.ones(np.size(u)), np.cos(v))
-    ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
-
+def plot_trace(trace=None, color='b', world_size=30):
+    map = Basemap(projection='vandg',lat_0=0,lon_0=0,resolution=None)
+    map.drawparallels(np.arange(-90.0,91.0,180.0/(world_size-1.0)),latmax=90)
+    map.drawmeridians(np.arange(0,360,(360.0/world_size)),latmax=90)
+    map.drawgreatcircle(0,0,0,20,linewidth=5,color='b')
+    map.drawgreatcircle(0,20,20,20,linewidth=5,color='b')
     plt.show()
+
 
 if __name__ == '__main__':
     plot_trace()
