@@ -6,6 +6,7 @@ import judge
 import shutil
 from constants import *
 import random
+import viz
 
 class TestTron(unittest.TestCase):
     def test_movement(self):
@@ -25,7 +26,8 @@ class TestTron(unittest.TestCase):
         self.assertEqual(P.west(), (29,0))
         self.assertTrue(P.at_north_pole())
         self.assertFalse(P.at_south_pole())
-        self.assertTrue(P.is_adjacent((29,0)))
+        self.assertFalse(P.is_adjacent((29,0)))  # (29,0) and (0,0) are the same point (the North Pole)
+        self.assertTrue(P.is_adjacent((17,1)))   # All points on the arctic circle are adjacent to the North Pole
 
         P = tron.Position((29,29))
         self.assertEqual(P.north(), (29,28))
@@ -34,10 +36,45 @@ class TestTron(unittest.TestCase):
         self.assertEqual(P.west(), (28,29))
         self.assertTrue(P.at_south_pole())
         self.assertFalse(P.at_north_pole())
-        self.assertTrue(P.is_adjacent((0,29)))
+        self.assertFalse(P.is_adjacent((0,29)))  # (29,29) and (0,29) are the same point (the South Pole)
+        self.assertTrue(P.is_adjacent((19,28)))  # All points on the antarctic circle are adjacent to the South Pole
 
 
 class TestStateFile(unittest.TestCase):
+    def test_poles(self):
+        """
+        Verify that behaviour at the poles are as expected. All points in the (ant)arctic circles should be
+        treated as adjacent, and (x,0) should be the same point for all x, and likewise for (x,29).
+        """
+        blue_red = (((15,1),(15,28)),
+                    ((25,0),(25,29)), # Both players step into the poles. The system should handle the adjacency
+                                      #   of the unusual coordinates correctly.
+                    ((5,1), (5,28)),  # Both players step out of the poles at completely different longitudes. Again,
+                                      #   the system should handle the adjacency correctly despite the unusual
+                                      #   coordinates.
+                    ((5,0), (5,29))   # This should generate an exception, since both players have already visited
+                                      #   the poles.
+                   )
+
+        J = judge.Judge(pos_blue=blue_red[0][0], pos_red=blue_red[0][1])
+        J.world.save('game.state', player=BLUE)
+        self.assertEqual(J.adjudicate('game.state', new_move=None), None)
+        winner = None
+        move = 0
+        for (blue,red) in blue_red[1:]:
+            move += 1
+            for pos in (blue, red):
+                player = BLUE if pos == blue else RED
+                J.world.save('game.state', player=player)
+                P = tron.World('game.state')
+                P.move_player(pos)
+                P.save('game.state')
+                if move == 3:
+                    self.assertRaises(judge.StateFileException, J.adjudicate, 'game.state', new_move=player)
+                else:
+                    J.adjudicate('game.state', new_move=player)
+
+
     def test_adjudication(self):
 
         blue_red = (((10,10),(9,9)),
@@ -103,9 +140,4 @@ class TestStateFile(unittest.TestCase):
 
         self.assertNotEqual(winner, None)
 
-        if winner == BLUE:
-            print("BLUE WINS!")
-        else:
-            print("RED WINS!")
-        print("BLUE: " + str(J.trace_blue))
-        print("RED:  " + str(J.trace_red))
+        # viz.plot_trace(J.trace_blue,J.trace_red)

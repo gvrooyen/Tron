@@ -235,4 +235,3 @@ class Strategy(object):
 
         world.set_state(world.pos_player, PLAYER)
         world.set_state(pos, PLAYER_WALL)
-
