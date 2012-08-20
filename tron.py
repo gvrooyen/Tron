@@ -7,6 +7,10 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler)
 
+class PoleStateException(Exception):
+    pass
+
+
 class Position(object):
     """Position on spherical coordinates."""
 
@@ -108,11 +112,11 @@ class Position(object):
 
         # Firstly, a sanity check on the coordinates
         for i in [0, 1]:
-            if (pos[i] < 0) or (pos[i] >= world_size):
+            if (pos[i] < 0) or (pos[i] >= self.world_size):
                 return False
 
         if self.at_south_pole():
-            return pos[1] == world_size - 2
+            return pos[1] == self.world_size - 2
         elif self.at_north_pole():
             return pos[1] == 1
         else:
@@ -144,13 +148,32 @@ class World(object):
             self.pos_opponent = None
 
     def state(self, pos):
-        if pos:
-            return self.world[pos[0]][pos[1]]
-        else:
+        if pos == None:
             return None
+        elif pos[1] == 0:     # at north pole
+            for i in xrange(1, self.world_size):
+                if self.world[i][0] != self.world[0][0]:
+                    raise PoleStateException("The north pole is in an inconsistent state at (%d,0)." % i)
+            return self.world[0][0]
+        elif pos[1] == self.world_size - 1:     # at south pole
+            for i in xrange(1, self.world_size):
+                if self.world[i][0] != self.world[0][0]:
+                    raise PoleStateException("The south pole is in an inconsistent state at (%d,%d)." %
+                                             (i, self.world_size-1))
+            return self.world[0][self.world_size-1]
+        else:
+            return self.world[pos[0]][pos[1]]
 
     def set_state(self, pos, state):
-        if pos:
+        if pos == None:
+            pass
+        elif pos[1] == 0:   # at north pole
+            for i in xrange(0, self.world_size):
+                self.world[i][0] = state
+        elif pos[1] == self.world_size - 1:     # at south pole
+            for i in xrange(0, self.world_size):
+                self.world[i][self.world_size-1] = state
+        else:
             self.world[pos[0]][pos[1]] = state
 
     def move_player(self, pos, opponent=False):
@@ -180,14 +203,27 @@ class World(object):
             pos = self.pos_player
 
         result = 0
-        if self.state(Position(pos).north()) == EMPTY:
-            result += 1
-        if self.state(Position(pos).south()) == EMPTY:
-            result += 1
-        if self.state(Position(pos).east()) == EMPTY:
-            result += 1
-        if self.state(Position(pos).west()) == EMPTY:
-            result += 1
+
+        # As usual, the poles have to be treated carefully. Check for pole positions first, then handle the
+        # more general case.
+
+        if Position(pos).at_south_pole():
+            for i in xrange(0, self.world_size-1):
+                if self.state((i,self.world_size-2)) == EMPTY:
+                    result += 1
+        elif Position(pos).at_north_pole():
+            for i in xrange(0, self.world_size-1):
+                if self.state((i,1)) == EMPTY:
+                    result += 1
+        else:
+            if self.state(Position(pos).north()) == EMPTY:
+                result += 1
+            if self.state(Position(pos).south()) == EMPTY:
+                result += 1
+            if self.state(Position(pos).east()) == EMPTY:
+                result += 1
+            if self.state(Position(pos).west()) == EMPTY:
+                result += 1
 
         return result
 
