@@ -14,23 +14,34 @@ class Position(object):
         self.pos = pos
         self.world_size = world_size
 
-        # TODO: Assert that pos has valid world coordinates
+        for i in [0, 1]:
+            if (pos[i] < 0) or (pos[i] >= world_size):
+                raise ValueError("Coordinates out of range: pos[%d] = %d" % (i,pos[i]))
 
     def __getitem__(self, item):
         return self.pos[item]
 
-    def north(self):
-        """Returns the coordinates north of the current position, or None if it's the north pole."""
+    def at_north_pole(self):
+        return self.pos[1] == 0
 
-        if self.pos[1] == 0:
+    def at_south_pole(self):
+        return self.pos[1] == self.world_size - 1
+
+    def at_pole(self):
+        return self.at_north_pole() or self.at_south_pole()
+
+    def north(self):
+        """Returns the coordinates north of the current position, or None if it's at one of the poles."""
+
+        if self.at_pole():
             return None
         else:
             return (self.pos[0], self.pos[1]-1)
 
     def south(self):
-        """Returns the coordinates south of the specified position, or None if it's the south pole."""
+        """Returns the coordinates south of the specified position, or None if it's at one of the poles."""
 
-        if self.pos[1] == self.world_size - 1:
+        if self.at_pole():
             return None
         else:
             return (self.pos[0], self.pos[1]+1)
@@ -51,25 +62,41 @@ class Position(object):
         else:
             return (self.pos[0]-1, self.pos[1])
 
-    def at_north_pole(self):
-        return self.pos[1] == 0
-
-    def at_south_pole(self):
-        return self.pos[1] == self.world_size - 1
-
-    def go_north(self):
+    def go_north(self, lon=None):
+        """
+        Move north from the current position. An optional 'lon' parameter is provided for the special case where
+        the current position is the south pole. At the pole, all directions are north, and the caller needs to
+        specify the meridian (longitude) which should be followed north.
+        """
         new_pos = self.north()
         if new_pos:
             self.pos = new_pos
         else:
-            raise RuntimeError("Cannot move north from the north pole.")
+            if self.at_south_pole():
+                if lon:
+                    self.pos = (lon, self.world_size - 2)
+                else:
+                    raise RuntimeError("Ambiguous movement: all directions are north at the south pole.")
+            else:
+                raise RuntimeError("Cannot move further north from the north pole.")
 
-    def go_south(self):
+    def go_south(self, lon=None):
+        """
+        Move south from the current position. An optional 'lon' parameter is provided for the special case where
+        the current position is the north pole. At the pole, all directions are south, and the caller needs to
+        specify the meridian (longitude) which should be followed south.
+        """
         new_pos = self.south()
         if new_pos:
             self.pos = new_pos
         else:
-            raise RuntimeError("Cannot move south from the south pole.")
+            if self.at_north_pole():
+                if lon:
+                    self.pos = (lon, 0)
+                else:
+                    raise RuntimeError("Ambiguous movement: all directions are south at the north pole.")
+            else:
+                raise RuntimeError("Cannot move south from the south pole.")
 
     def go_west(self):
         self.pos = self.west()
@@ -78,7 +105,18 @@ class Position(object):
         self.pos = self.east()
 
     def is_adjacent(self, pos):
-        return ((self.west() == pos) or (self.east() == pos) or (self.north() == pos) or (self.south() == pos))
+
+        # Firstly, a sanity check on the coordinates
+        for i in [0, 1]:
+            if (pos[i] < 0) or (pos[i] >= world_size):
+                return False
+
+        if self.at_south_pole():
+            return pos[1] == world_size - 2
+        elif self.at_north_pole():
+            return pos[1] == 1
+        else:
+            return ((self.west() == pos) or (self.east() == pos) or (self.north() == pos) or (self.south() == pos))
 
 
 class World(object):
