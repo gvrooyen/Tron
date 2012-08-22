@@ -10,6 +10,9 @@ logger.addHandler(logging.StreamHandler)
 class PoleStateException(Exception):
     pass
 
+class StrategyException(Exception):
+    pass
+
 
 class Position(object):
     """Position on spherical coordinates."""
@@ -96,7 +99,7 @@ class Position(object):
         else:
             if self.at_north_pole():
                 if lon:
-                    self.pos = (lon, 0)
+                    self.pos = (lon, 1)
                 else:
                     raise RuntimeError("Ambiguous movement: all directions are south at the north pole.")
             else:
@@ -119,6 +122,10 @@ class Position(object):
             return pos[1] == self.world_size - 2
         elif self.at_north_pole():
             return pos[1] == 1
+        elif Position(pos).at_south_pole():
+            return self.pos[1] == self.world_size - 2
+        elif Position(pos).at_north_pole():
+            return self.pos[1] == 1
         else:
             return ((self.west() == pos) or (self.east() == pos) or (self.north() == pos) or (self.south() == pos))
 
@@ -255,31 +262,6 @@ class World(object):
 class Strategy(object):
     """Abstract base class for player strategies."""
 
-    def heading(self, world, opponent = False):
-        """Calculate the player's current heading."""
-
-        if opponent:
-            pos = world.pos_opponent
-            me = OPPONENT
-        else:
-            pos = world.pos_player
-            me = PLAYER
-
-        if pos.at_north_pole():
-            return SOUTH
-        elif pos.at_south_pole():
-            return NORTH
-        elif world.state(pos.north()) == me:
-            return SOUTH
-        elif world.state(pos.south()) == me:
-            return NORTH
-        elif world.state(pos.east()) == me:
-            return WEST
-        elif world.state(pos.west()) == me:
-            return EAST
-
-
-
     def move(self, world, debug=False):
         """
         Perform the optimal move for this strategy, based on the world state.
@@ -287,23 +269,46 @@ class Strategy(object):
         The default (dummy/reference) strategy is to make a random valid move.
         """
 
-        moves = [NORTH, SOUTH, EAST, WEST]
-        random.shuffle(moves)
         pos = Position(world.pos_player.pos)
 
-        for m in moves:
-            if (m == NORTH) and (not pos.at_north_pole()) and (world.state(pos.north()) == None):
-                world.pos_player.go_north()
-                break
-            elif (m == SOUTH) and (not pos.at_south_pole()) and (world.state(pos.south()) == None):
-                world.pos_player.go_south()
-                break
-            elif (m == EAST) and (world.state(pos.east()) == None):
-                world.pos_player.go_east()
-                break
-            elif (m == WEST) and (world.state(pos.west()) == None):
-                world.pos_player.go_west()
-                break
+        # Handle the poles first, they're always tricksy
+
+        if pos.at_south_pole():
+            lons = range(0,world.world_size)
+            random.shuffle(lons)
+            for lon in lons:
+                if world.state((lon,world.world_size-2)) == EMPTY:
+                    world.pos_player.go_north(lon)
+                    break
+            else:
+                raise StrategyException("Trapped at the south pole!")
+        elif pos.at_north_pole():
+            lons = range(0,world.world_size)
+            random.shuffle(lons)
+            for lon in lons:
+                if world.state((lon,1)) == EMPTY:
+                    world.pos_player.go_south(lon)
+                    break
+            else:
+                raise StrategyException("Trapped at the south pole!")
+        else:
+            moves = [NORTH, SOUTH, EAST, WEST]
+            random.shuffle(moves)
+
+            for m in moves:
+                if (m == NORTH) and (world.state(pos.north()) == EMPTY):
+                    world.pos_player.go_north()
+                    break
+                elif (m == SOUTH) and (world.state(pos.south()) == EMPTY):
+                    world.pos_player.go_south()
+                    break
+                elif (m == EAST) and (world.state(pos.east()) == EMPTY):
+                    world.pos_player.go_east()
+                    break
+                elif (m == WEST) and (world.state(pos.west()) == EMPTY):
+                    world.pos_player.go_west()
+                    break
+
         if debug:
             logger.debug(pos)
 

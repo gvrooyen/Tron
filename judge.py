@@ -170,12 +170,20 @@ class Judge(object):
                     elif state == OPPONENT_WALL:
                         opponent_wall_count += 1
 
-            if player_count != 1:
+            if (tron.Position(self.world.pos_player).at_south_pole() or
+                tron.Position(self.world.pos_player).at_north_pole()):
+                if (player_count != self.world_size):
+                    raise StateFileException("Only one player position may be specified (there are %d)." % player_count)
+            elif player_count != 1:
                 raise StateFileException("Only one player position may be specified (there are %d)." % player_count)
-            if opponent_count != 1:
+            if (tron.Position(self.world.pos_opponent).at_south_pole() or
+                tron.Position(self.world.pos_opponent).at_north_pole()):
+                if (opponent_count != self.world_size):
+                    raise StateFileException("Only one opponent position may be specified (there are %d)." % opponent_count)
+            elif opponent_count != 1:
                 raise StateFileException("Only one opponent position may be specified (there are %d)." % opponent_count)
-            if abs(player_wall_count - opponent_wall_count) > 1:
-                raise StateFileException("Imbalance between player and opponent's number of walls.")
+#            if abs(player_wall_count - opponent_wall_count) > 1:
+#                raise StateFileException("Imbalance between player and opponent's number of walls.")
 
             # Finally, check whether we have a winner, by seeing whether either player has zero liberties left.
 

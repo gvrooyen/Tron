@@ -21,7 +21,7 @@ class TestTron(unittest.TestCase):
 
         P = tron.Position((0,0))
         self.assertEqual(P.north(), None)
-        self.assertEqual(P.south(), (0,1))
+        self.assertEqual(P.south(), None)
         self.assertEqual(P.east(), (1,0))
         self.assertEqual(P.west(), (29,0))
         self.assertTrue(P.at_north_pole())
@@ -30,7 +30,7 @@ class TestTron(unittest.TestCase):
         self.assertTrue(P.is_adjacent((17,1)))   # All points on the arctic circle are adjacent to the North Pole
 
         P = tron.Position((29,29))
-        self.assertEqual(P.north(), (29,28))
+        self.assertEqual(P.north(), None)
         self.assertEqual(P.south(), None)
         self.assertEqual(P.east(), (0,29))
         self.assertEqual(P.west(), (28,29))
@@ -140,4 +140,10 @@ class TestStateFile(unittest.TestCase):
 
         self.assertNotEqual(winner, None)
 
-        # viz.plot_trace(J.trace_blue,J.trace_red)
+        print J.trace_red
+        viz.plot_trace(J.trace_blue,J.trace_red)
+
+# TODO: Note that "Each player will start on exactly opposite sides of the sphere."
+#       Starting points for each player will be on exactly opposing points of the same Y axial, where Y > 0 and Y < 29,
+#       i.e excluding the poles. This will neither advantage nor disadvantage any specific player. To clarify: If you
+#       start at position (X, Y) your opponent will start at position ( (X + 15) % 30, Y).

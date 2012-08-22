@@ -14,7 +14,7 @@ def tron_to_xy(tx,ty,map,world_size=30):
     (lon,lat) = tron_to_lonlat(tx,ty,world_size)
     return map(lon,lat)
 
-def _plot_trace(trace,color,map):
+def _plot_trace(trace,color,map,world_size=30):
     if len(trace) > 0:
         x,y = tron_to_xy(trace[0][0],trace[0][1],map)
         map.plot(x,y,color+'o',markersize=8.0)
@@ -22,9 +22,15 @@ def _plot_trace(trace,color,map):
             lon0,lat0 = tron_to_lonlat(trace[0][0],trace[0][1])
             for pos in trace[1:]:
                 lon,lat = tron_to_lonlat(pos[0],pos[1])
+                if (lon0 == 180.0) and (lon == 180.0):
+                    lon += 0.001
+                    lon0 += 0.001
                 map.drawgreatcircle(lon0,lat0,lon,lat,linewidth=5,color=color)
                 lon0,lat0 = lon,lat
-            x,y = tron_to_xy(trace[-1][0],trace[-1][1],map)
+            if trace[-1][0] >= 15:
+                x,y = tron_to_xy(trace[-1][0]+0.001,trace[-1][1],map)
+            else:
+                x,y = tron_to_xy(trace[-1][0],trace[-1][1],map)
             map.plot(x,y,color+'D',markersize=8.0)
 
 def plot_trace(trace1=None, trace2=None, player1=BLUE, player2=RED, world_size=30):
