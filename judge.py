@@ -30,8 +30,6 @@ class Judge(object):
                     self.world.move_blue((x,y))
                 elif (x,y) == pos_red:
                     self.world.move_red((x,y))
-                else:
-                    self.world.set_state((x,y), EMPTY)
 
         self.trace_blue = [pos_blue]
         self.trace_red = [pos_red]

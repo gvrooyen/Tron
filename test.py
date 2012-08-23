@@ -121,7 +121,7 @@ class TestStateFile(unittest.TestCase):
         self.assertEqual(winner, RED)
 
     def test_basic_strategy(self):
-        random.seed(0)
+        random.seed(25)
         J = judge.Judge()
         J.world.save('game.state', player=BLUE)
         self.assertEqual(J.adjudicate('game.state', new_move=None), None)
@@ -140,7 +140,7 @@ class TestStateFile(unittest.TestCase):
 
         self.assertNotEqual(winner, None)
 
-        print J.trace_red
+        # print J.trace_red[0:15]
         viz.plot_trace(J.trace_blue,J.trace_red)
 
 # TODO: Note that "Each player will start on exactly opposite sides of the sphere."

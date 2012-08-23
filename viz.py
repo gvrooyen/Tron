@@ -22,10 +22,12 @@ def _plot_trace(trace,color,map,world_size=30):
             lon0,lat0 = tron_to_lonlat(trace[0][0],trace[0][1])
             for pos in trace[1:]:
                 lon,lat = tron_to_lonlat(pos[0],pos[1])
-                if (lon0 == 180.0) and (lon == 180.0):
-                    lon += 0.001
-                    lon0 += 0.001
-                map.drawgreatcircle(lon0,lat0,lon,lat,linewidth=5,color=color)
+                if (lon0 == 180.0) and (lon >= 180.0):
+                    map.drawgreatcircle(lon0+0.001,lat0,lon+0.001,lat,linewidth=5,color=color)
+                elif (lon0 >= 180.0) and (lon == 180.0):
+                    map.drawgreatcircle(lon0+0.001,lat0,lon+0.001,lat,linewidth=5,color=color)
+                else:
+                    map.drawgreatcircle(lon0,lat0,lon,lat,linewidth=5,color=color)
                 lon0,lat0 = lon,lat
             if trace[-1][0] >= 15:
                 x,y = tron_to_xy(trace[-1][0]+0.001,trace[-1][1],map)

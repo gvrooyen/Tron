@@ -80,7 +80,7 @@ class Position(object):
             self.pos = new_pos
         else:
             if self.at_south_pole():
-                if lon:
+                if lon != None:
                     self.pos = (lon, self.world_size - 2)
                 else:
                     raise RuntimeError("Ambiguous movement: all directions are north at the south pole.")
@@ -98,7 +98,7 @@ class Position(object):
             self.pos = new_pos
         else:
             if self.at_north_pole():
-                if lon:
+                if lon != None:
                     self.pos = (lon, 1)
                 else:
                     raise RuntimeError("Ambiguous movement: all directions are south at the north pole.")
