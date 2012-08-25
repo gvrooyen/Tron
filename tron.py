@@ -3,6 +3,7 @@ __author__ = 'gvrooyen'
 from constants import *
 import random
 import logging
+import copy
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler)
@@ -233,6 +234,44 @@ class World(object):
                 result += 1
 
         return result
+
+    def empty_space(self):
+        """
+        Returns a set of empty spaces (coordinate tuples) in the world.
+
+        Note that the poles are only included once, as (0,0) and (0,self.world_size-1)
+        """
+
+        result = set([])
+
+        # Handle the poles first
+
+        if self.state((0,0)) == EMPTY:
+            result.add((0,0))
+        if self.state((0,self.world_size-1)) == EMPTY:
+            result.add((0,self.world_size-1))
+
+        # Cycle through the rest of the world (i.e. all x coordinates, but with the poles' y coordinates excluded)
+
+        for x in xrange(0,self.world_size):
+            for y in xrange(1,self.world_size-1):
+                if self.state((x,y)) == EMPTY:
+                    result.add((x,y))
+
+        return result
+
+    def prospect(self, opponent=False):
+        """
+        A liberty-based heuristic that calculates how much occupiable free space surrounds a player.
+        """
+
+        if opponent:
+            pos = self.pos_opponent
+        else:
+            pos = self.pos_player
+
+        # TODO: Complete the prospect function
+
 
     def save(self, filename, player=BLUE):
 

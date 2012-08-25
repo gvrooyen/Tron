@@ -121,27 +121,30 @@ class TestStateFile(unittest.TestCase):
         self.assertEqual(winner, RED)
 
     def test_basic_strategy(self):
-        random.seed(25)
-        J = judge.Judge()
-        J.world.save('game.state', player=BLUE)
-        self.assertEqual(J.adjudicate('game.state', new_move=None), None)
-        winner = None
-        player = BLUE
-        while (winner == None):
-            player = RED if player == BLUE else BLUE
-            shutil.copyfile('game.state', 'game.state.bak')
-            J.world.save('game.state', player=player)
-            W = tron.World('game.state')
-            S = tron.Strategy()
-            S.move(W)
-            shutil.copyfile('game.state', 'game.state.bak')
-            W.save('game.state')
-            winner = J.adjudicate('game.state', new_move=player)
+        for seed in xrange(0,1):
+            random.seed(seed)
+            J = judge.Judge()
+            J.world.save('game.state', player=BLUE)
+            self.assertEqual(J.adjudicate('game.state', new_move=None), None)
+            winner = None
+            player = BLUE
+            while (winner == None):
+                player = RED if player == BLUE else BLUE
+                shutil.copyfile('game.state', 'game.state.bak')
+                J.world.save('game.state', player=player)
+                W = tron.World('game.state')
+                S = tron.Strategy()
+                S.move(W)
+                shutil.copyfile('game.state', 'game.state.bak')
+                W.save('game.state')
+                winner = J.adjudicate('game.state', new_move=player)
 
-        self.assertNotEqual(winner, None)
+            self.assertNotEqual(winner, None)
 
-        # print J.trace_red[0:15]
-        viz.plot_trace(J.trace_blue,J.trace_red)
+            world_map = viz.WorldMap()
+            world_map.plot_trace(J.trace_blue,J.trace_red)
+            world_map.plot_points(J.world.empty_space(),'g')
+            world_map.show()
 
 # TODO: Note that "Each player will start on exactly opposite sides of the sphere."
 #       Starting points for each player will be on exactly opposing points of the same Y axial, where Y > 0 and Y < 29,

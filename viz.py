@@ -5,67 +5,67 @@ import matplotlib.pyplot as plt
 import numpy as np
 from constants import *
 
-def tron_to_lonlat(tx,ty, world_size=30):
-    lat = 180.0/(world_size-1.0)*ty - 90.0
-    lon = (360.0/world_size)*tx
-    return (lon,lat)
+class WorldMap(object):
 
-def tron_to_xy(tx,ty,map,world_size=30):
-    (lon,lat) = tron_to_lonlat(tx,ty,world_size)
-    return map(lon,lat)
+    def __init__(self, world_size=30):
+        self.world_size = world_size
+        self.world_map = Basemap(projection='vandg',lat_0=0,lon_0=0,resolution=None)
+        self.world_map.drawparallels(np.arange(-90.0,91.0,180.0/(world_size-1.0)),latmax=90)
+        self.world_map.drawmeridians(np.arange(0,360,(360.0/world_size)),latmax=90)
 
-def _plot_trace(trace,color,map,world_size=30):
-    if len(trace) > 0:
-        x,y = tron_to_xy(trace[0][0],trace[0][1],map)
-        map.plot(x,y,color+'o',markersize=8.0)
-        if len(trace) > 1:
-            lon0,lat0 = tron_to_lonlat(trace[0][0],trace[0][1])
-            for pos in trace[1:]:
-                lon,lat = tron_to_lonlat(pos[0],pos[1])
-                if (lon0 == 180.0) and (lon >= 180.0):
-                    map.drawgreatcircle(lon0+0.001,lat0,lon+0.001,lat,linewidth=5,color=color)
-                elif (lon0 >= 180.0) and (lon == 180.0):
-                    map.drawgreatcircle(lon0+0.001,lat0,lon+0.001,lat,linewidth=5,color=color)
+    def tron_to_lonlat(self, tx, ty):
+        lat = 180.0/(self.world_size-1.0)*ty - 90.0
+        lon = (360.0/self.world_size)*tx
+        return (lon, lat)
+
+    def tron_to_xy(self, tx, ty):
+        (lon,lat) = self.tron_to_lonlat(tx, ty)
+        return self.world_map(lon,lat)
+
+    def _plot_trace(self, trace, color):
+        if len(trace) > 0:
+            x,y = self.tron_to_xy(trace[0][0],trace[0][1])
+            self.world_map.plot(x,y,color+'o',markersize=8.0)
+            if len(trace) > 1:
+                lon0,lat0 = self.tron_to_lonlat(trace[0][0],trace[0][1])
+                for pos in trace[1:]:
+                    lon,lat = self.tron_to_lonlat(pos[0],pos[1])
+                    if (lon0 == 180.0) and (lon >= 180.0):
+                        self.world_map.drawgreatcircle(lon0+0.001,lat0,lon+0.001,lat,linewidth=5,color=color)
+                    elif (lon0 >= 180.0) and (lon == 180.0):
+                        self.world_map.drawgreatcircle(lon0+0.001,lat0,lon+0.001,lat,linewidth=5,color=color)
+                    else:
+                        self.world_map.drawgreatcircle(lon0,lat0,lon,lat,linewidth=5,color=color)
+                    lon0,lat0 = lon,lat
+                if trace[-1][0] >= 15:
+                    x,y = self.tron_to_xy(trace[-1][0]+0.001,trace[-1][1])
                 else:
-                    map.drawgreatcircle(lon0,lat0,lon,lat,linewidth=5,color=color)
-                lon0,lat0 = lon,lat
-            if trace[-1][0] >= 15:
-                x,y = tron_to_xy(trace[-1][0]+0.001,trace[-1][1],map)
-            else:
-                x,y = tron_to_xy(trace[-1][0],trace[-1][1],map)
-            map.plot(x,y,color+'D',markersize=8.0)
+                    x,y = self.tron_to_xy(trace[-1][0],trace[-1][1])
+                self.world_map.plot(x,y,color+'D',markersize=8.0)
 
-def plot_trace(trace1=None, trace2=None, player1=BLUE, player2=RED, world_size=30):
-    map = Basemap(projection='vandg',lat_0=0,lon_0=0,resolution=None)
-    map.drawparallels(np.arange(-90.0,91.0,180.0/(world_size-1.0)),latmax=90)
-    map.drawmeridians(np.arange(0,360,(360.0/world_size)),latmax=90)
-#    map.drawgreatcircle(0,0,0,20,linewidth=5,color='b')
-#    map.drawgreatcircle(0,20,20,20,linewidth=5,color='b')
-#    x,y = map(0,0)
-#    map.plot(x,y,'bo',markersize=8.0)
-#    x,y = map(20,20)
-#    map.plot(x,y,'bD',markersize=8.0)
-#    plt.show()
+    def plot_trace(self, trace1=None, trace2=None, player1=BLUE, player2=RED):
 
-    if player1 == BLUE:
-        p1color = 'b'
-    elif player1 == RED:
-        p1color = 'r'
-    else:
-        p1color = 'm'
+        if player1 == BLUE:
+            p1color = 'b'
+        elif player1 == RED:
+            p1color = 'r'
+        else:
+            p1color = 'm'
 
-    if player2 == BLUE:
-        p2color = 'b'
-    elif player2 == RED:
-        p2color = 'r'
-    else:
-        p2color = 'm'
+        if player2 == BLUE:
+            p2color = 'b'
+        elif player2 == RED:
+            p2color = 'r'
+        else:
+            p2color = 'm'
 
-    _plot_trace(trace1,p1color,map)
-    _plot_trace(trace2,p2color,map)
+        self._plot_trace(trace1,p1color)
+        self._plot_trace(trace2,p2color)
 
-    plt.show()
+    def plot_points(self, points, color='k'):
+        for point in points:
+            x,y = self.tron_to_xy(point[0]+0.001,point[1])
+            self.world_map.plot(x,y,color+'s',markersize=6.0)
 
-
-if __name__ == '__main__':
-    plot_trace()
+    def show(self):
+        plt.show()
