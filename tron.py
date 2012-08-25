@@ -3,7 +3,6 @@ __author__ = 'gvrooyen'
 from constants import *
 import random
 import logging
-import copy
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler)
@@ -44,7 +43,7 @@ class Position(object):
         if self.at_pole():
             return None
         else:
-            return (self.pos[0], self.pos[1]-1)
+            return Position((self.pos[0], self.pos[1]-1))
 
     def south(self):
         """Returns the coordinates south of the specified position, or None if it's at one of the poles."""
@@ -52,23 +51,23 @@ class Position(object):
         if self.at_pole():
             return None
         else:
-            return (self.pos[0], self.pos[1]+1)
+            return Position((self.pos[0], self.pos[1]+1))
 
     def east(self):
         """Returns the coordinates east of the specified position."""
 
         if self.pos[0] == self.world_size - 1:
-            return (0, self.pos[1])
+            return Position((0, self.pos[1]))
         else:
-            return (self.pos[0]+1, self.pos[1])
+            return Position((self.pos[0]+1, self.pos[1]))
 
     def west(self):
         """Returns the coordinates west of the specified position."""
 
         if self.pos[0] == 0:
-            return (self.world_size - 1, self.pos[1])
+            return Position((self.world_size - 1, self.pos[1]))
         else:
-            return (self.pos[0]-1, self.pos[1])
+            return Position((self.pos[0]-1, self.pos[1]))
 
     def go_north(self, lon=None):
         """
@@ -128,7 +127,20 @@ class Position(object):
         elif Position(pos).at_north_pole():
             return self.pos[1] == 1
         else:
-            return ((self.west() == pos) or (self.east() == pos) or (self.north() == pos) or (self.south() == pos))
+            return ((self.west().to_tuple() == pos) or (self.east().to_tuple() == pos)
+                    or (self.north().to_tuple() == pos) or (self.south().to_tuple() == pos))
+
+    def to_tuple(self):
+        """
+        Return the current position as a tuple. Poles are returned as (0,0) and (0,self.world_size-1), respectively
+        (the x coordinate is normalised to 0).
+        """
+        if self.at_north_pole():
+            return (0,0)
+        elif self.at_south_pole():
+            return (0,self.world_size-1)
+        else:
+            return self.pos
 
 
 class World(object):
@@ -265,12 +277,25 @@ class World(object):
         A liberty-based heuristic that calculates how much occupiable free space surrounds a player.
         """
 
-        if opponent:
-            pos = self.pos_opponent
-        else:
-            pos = self.pos_player
+        unclaimed = self.empty_space()
+        player_frontier = set(self.pos_player)
+        opponent_frontier = set(self.pos_opponent)
+        player_domain = set()
+        opponent_domain = set()
 
-        # TODO: Complete the prospect function
+        while (len(player_frontier) > 0) and (len(opponent_frontier) > 0):
+            if opponent:
+                frontier = opponent_frontier
+                domain = opponent_domain
+            else:
+                frontier = player_frontier
+                domain = player_domain
+            new_frontier = set()
+            for pos in frontier:
+                # Find all adjacent coordinates that are still unclaimed, and claim them for the new frontier
+                # if Position(pos).north().to_tuple() in
+                pass
+
 
 
     def save(self, filename, player=BLUE):
