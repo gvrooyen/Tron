@@ -121,7 +121,7 @@ class TestStateFile(unittest.TestCase):
         self.assertEqual(winner, RED)
 
     def test_basic_strategy(self):
-        for seed in xrange(0,1):
+        for seed in xrange(100,110):
             random.seed(seed)
             J = judge.Judge()
             J.world.save('game.state', player=BLUE)
@@ -141,10 +141,40 @@ class TestStateFile(unittest.TestCase):
 
             self.assertNotEqual(winner, None)
 
-            world_map = viz.WorldMap()
-            world_map.plot_trace(J.trace_blue,J.trace_red)
-            world_map.plot_points(J.world.empty_space(),'g')
-            world_map.show()
+#            world_map = viz.WorldMap()
+#            world_map.plot_trace(J.trace_blue,J.trace_red)
+#            world_map.plot_points(J.world.empty_space(),'g')
+#            world_map.show()
+
+    def test_prospect(self):
+        random.seed(1001)
+        J = judge.Judge()
+        J.world.save('game.state', player=BLUE)
+        self.assertEqual(J.adjudicate('game.state', new_move=None), None)
+        winner = None
+        player = BLUE
+
+        for turn in xrange(0,30):
+            player = RED if player == BLUE else BLUE
+            shutil.copyfile('game.state', 'game.state.bak')
+            J.world.save('game.state', player=player)
+            W = tron.World('game.state')
+            S = tron.Strategy()
+            S.move(W)
+            shutil.copyfile('game.state', 'game.state.bak')
+            W.save('game.state')
+            winner = J.adjudicate('game.state', new_move=player)
+            if winner:
+                break
+
+
+        (player_domain, opponent_domain) = J.world.prospect(turns=10)
+        world_map = viz.WorldMap()
+        world_map.plot_trace(J.trace_blue,J.trace_red)
+        world_map.plot_points(player_domain, 'c')
+        world_map.plot_points(opponent_domain, 'm')
+        world_map.show()
+
 
 # TODO: Note that "Each player will start on exactly opposite sides of the sphere."
 #       Starting points for each player will be on exactly opposing points of the same Y axial, where Y > 0 and Y < 29,

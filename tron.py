@@ -272,18 +272,20 @@ class World(object):
 
         return result
 
-    def prospect(self, opponent=False):
+    def prospect(self, opponent=False, turns=30):
         """
         A liberty-based heuristic that calculates how much occupiable free space surrounds a player.
         """
 
         unclaimed = self.empty_space()
-        player_frontier = set(self.pos_player)
-        opponent_frontier = set(self.pos_opponent)
+        player_frontier = {self.pos_player}
+        opponent_frontier = {self.pos_opponent}
         player_domain = set()
         opponent_domain = set()
+        turn_count = 0
 
-        while (len(player_frontier) > 0) and (len(opponent_frontier) > 0):
+        while ((len(player_frontier) > 0) or (len(opponent_frontier) > 0)) and (turn_count < turns):
+            turn_count += 1
             if opponent:
                 frontier = opponent_frontier
                 domain = opponent_domain
@@ -293,8 +295,27 @@ class World(object):
             new_frontier = set()
             for pos in frontier:
                 # Find all adjacent coordinates that are still unclaimed, and claim them for the new frontier
-                # if Position(pos).north().to_tuple() in
-                pass
+                # TODO: Check that poles are handled correctly
+                adjacent = {Position(pos).north().to_tuple(), Position(pos).south().to_tuple(),
+                            Position(pos).east().to_tuple(), Position(pos).west().to_tuple()}
+                for a in adjacent:
+                    if a in unclaimed:
+                        unclaimed.remove(a)
+                        new_frontier.add(a)
+                domain.add(pos)
+            if opponent:
+                opponent_frontier = new_frontier
+                opponent_domain = domain
+            else:
+                player_frontier = new_frontier
+                player_domain = domain
+            opponent = not opponent
+
+        player_domain.update(player_frontier)
+        opponent_domain.update(opponent_frontier)
+
+        return (player_domain, opponent_domain)
+
 
 
 
