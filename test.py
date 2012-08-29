@@ -147,7 +147,7 @@ class TestStateFile(unittest.TestCase):
 #            world_map.show()
 
     def test_prospect(self):
-        random.seed(1001)
+        random.seed(1006)
         J = judge.Judge()
         J.world.save('game.state', player=BLUE)
         self.assertEqual(J.adjudicate('game.state', new_move=None), None)
@@ -168,7 +168,7 @@ class TestStateFile(unittest.TestCase):
                 break
 
 
-        (player_domain, opponent_domain) = J.world.prospect(turns=10)
+        (player_domain, opponent_domain) = J.world.prospect(turns=40)
         world_map = viz.WorldMap()
         world_map.plot_trace(J.trace_blue,J.trace_red)
         world_map.plot_points(player_domain, 'c')

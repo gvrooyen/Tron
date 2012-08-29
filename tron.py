@@ -295,9 +295,13 @@ class World(object):
             new_frontier = set()
             for pos in frontier:
                 # Find all adjacent coordinates that are still unclaimed, and claim them for the new frontier
-                # TODO: Check that poles are handled correctly
-                adjacent = {Position(pos).north().to_tuple(), Position(pos).south().to_tuple(),
-                            Position(pos).east().to_tuple(), Position(pos).west().to_tuple()}
+                if Position(pos).at_north_pole():
+                    adjacent = set([(x,1) for x in xrange(0,self.world_size)])
+                elif Position(pos).at_south_pole():
+                    adjacent = set([(x,self.world_size-2) for x in xrange(0,self.world_size)])
+                else:
+                    adjacent = {Position(pos).north().to_tuple(), Position(pos).south().to_tuple(),
+                                Position(pos).east().to_tuple(), Position(pos).west().to_tuple()}
                 for a in adjacent:
                     if a in unclaimed:
                         unclaimed.remove(a)
