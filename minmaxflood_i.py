@@ -88,15 +88,18 @@ class Strategy(tron.Strategy):
 
         # TODO: Optimise utility calculation
 
-        if len(prospect[1]) == 0:
-            if len(prospect[0]) == 0:
+        player = prospect[0] - 1
+        opponent = prospect[1] - 1
+
+        if opponent == 0:
+            if player == 0:
                 return 0
             else:
                 return float('inf')
-        elif len(prospect[0]) == 0:
+        elif player == 0:
             return float('-inf')
         else:
-            return 10*log10(1.0 * len(prospect[0]) / len(prospect[1]))
+            return 10*log10(1.0 * player / opponent)
 
 
     def move(self, world, debug=False):

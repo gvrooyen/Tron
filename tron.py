@@ -348,6 +348,7 @@ class World(object):
         player_domain.update(player_frontier)
         opponent_domain.update(opponent_frontier)
 
+        # print (len(player_domain), len(opponent_domain))
         return (player_domain, opponent_domain)
 
 
