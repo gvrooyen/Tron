@@ -180,7 +180,7 @@ class TestStateFile(unittest.TestCase):
 #        world_map.show()
 
     def test_minmaxflood_i(self):
-        for seed in xrange(0,10):
+        for seed in xrange(50,100):
             random.seed(seed)
             # TODO: The basic strategy test loop can be factored out into a separate module
             J = judge.Judge()
@@ -201,6 +201,7 @@ class TestStateFile(unittest.TestCase):
                     player = BLUE
                     # Blue plays with the strategy under test
                     S = minmaxflood_i.Strategy()
+                    S.time_limit = 20.0
                 shutil.copyfile('game.state', 'game.state.bak')
                 J.world.save('game.state', player=player)
                 W = tron.World('game.state')
@@ -213,10 +214,15 @@ class TestStateFile(unittest.TestCase):
 
             self.assertNotEqual(winner, None)
 
+            if winner == BLUE:
+                result = "Blue wins!"
+            else:
+                result = "Red wins!"
+
             world_map = viz.WorldMap()
             world_map.plot_trace(J.trace_blue,J.trace_red)
-            world_map.plot_points(J.world.empty_space(),'g')
-            world_map.show()
+            # world_map.plot_points(J.world.empty_space(),'g')
+            world_map.save(result, str(seed)+'.png')
 
 
 

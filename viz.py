@@ -8,8 +8,9 @@ from constants import *
 class WorldMap(object):
 
     def __init__(self, world_size=30):
+        plt.clf()
         self.world_size = world_size
-        self.world_map = Basemap(projection='vandg',lat_0=0,lon_0=0,resolution=None)
+        self.world_map = Basemap(projection='vandg',lat_0=0,lon_0=0)
         self.world_map.drawparallels(np.arange(-90.0,91.0,180.0/(world_size-1.0)),latmax=90)
         self.world_map.drawmeridians(np.arange(0,360,(360.0/world_size)),latmax=90)
 
@@ -67,5 +68,12 @@ class WorldMap(object):
             x,y = self.tron_to_xy(point[0]+0.001,point[1])
             self.world_map.plot(x,y,color+'s',markersize=6.0)
 
-    def show(self):
+    def show(self, title = None):
+        if title:
+            plt.title(title)
         plt.show()
+
+    def save(self, title = None, filename = 'world.png'):
+        if title:
+            plt.title(title)
+        plt.savefig(filename, dpi=300)

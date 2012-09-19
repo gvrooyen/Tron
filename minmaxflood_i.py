@@ -117,15 +117,25 @@ class Strategy(tron.Strategy):
         frontier = {root}
         leaves = set()
 
-        start_time = time.time()
+        # start_time = time.time()
+        # max_plies = 255
+
+        # DEBUG
+        start_time = float('inf')
+        max_plies = 7
+
+        last_full_ply = None
+        ply = 0
 
         # assert isinstance(world_copy, tron.World)
 
         # Start evaluating the game tree ply by ply. Stop when time runs out, or when one of the players
         # has no valid move left.
-        while (time.time() - start_time < self.time_limit) and (len(frontier) > 0):
+        while (time.time() - start_time < self.time_limit) and (len(frontier) > 0) and (ply < max_plies):
             # Evaluate the next ply. We'll sprinkle time limit checks generously to make sure that slow loops
             # don't run for too long.
+
+            ply += 1
 
             # Start with an empty frontier. As we iterate through the leaves, the new frontier will be built
             # up, and will become the set of leaves for the next ply.
@@ -171,12 +181,19 @@ class Strategy(tron.Strategy):
                     new_state = State(state, move)
                     new_frontier.add(new_state)
 
+            else:
+                # Only if we did not break out of the frontier loop
+                last_full_ply = frontier
+
             frontier = new_frontier
 
-        # After we've explored the entire game tree (or run out of time), we back up utility from the leaves to
-        # the root using the minimax criterion. We iterate through the leaves, and compare each leaf's utility to that
-        # of its parent. If it's None, lower (max case = player move) or higher (min case = opponent move), the leaf's
-        # utility is backed up to the parent.
+
+        # After we've explored the entire game tree (or run out of time), we back up utility from the last fully
+        # analysed ply to the root using the minimax criterion. We iterate through the leaves, and compare each leaf's
+        # utility to that of its parent. If it's None, lower (max case = player move) or higher (min case = opponent
+        # move), the leaf's utility is backed up to the parent.
+
+        leaves = last_full_ply
 
         while len(leaves) > 0:
             new_leaves = set()
@@ -198,6 +215,6 @@ class Strategy(tron.Strategy):
                             new_leaves.add(state.parent)
             leaves = new_leaves
 
-        print("Player moves to (%d,%d)" % root.next_move)
+        print("Player moves to (%d,%d); advantage = %0.2f" % (root.next_move[0], root.next_move[1], root.utility))
         world.set_state(root.next_move, PLAYER)
         world.set_state(current_player_pos, PLAYER_WALL)
