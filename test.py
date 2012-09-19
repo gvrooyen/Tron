@@ -6,7 +6,11 @@ import judge
 import shutil
 from constants import *
 import random
+import time
 import viz
+import minmaxflood_i
+
+MAX_MOVE_TIME = 4.9
 
 class TestTron(unittest.TestCase):
     def test_movement(self):
@@ -169,11 +173,52 @@ class TestStateFile(unittest.TestCase):
 
 
         (player_domain, opponent_domain) = J.world.prospect(turns=40)
-        world_map = viz.WorldMap()
-        world_map.plot_trace(J.trace_blue,J.trace_red)
-        world_map.plot_points(player_domain, 'c')
-        world_map.plot_points(opponent_domain, 'm')
-        world_map.show()
+#        world_map = viz.WorldMap()
+#        world_map.plot_trace(J.trace_blue,J.trace_red)
+#        world_map.plot_points(player_domain, 'c')
+#        world_map.plot_points(opponent_domain, 'm')
+#        world_map.show()
+
+    def test_minmaxflood_i(self):
+        for seed in xrange(0,10):
+            random.seed(seed)
+            # TODO: The basic strategy test loop can be factored out into a separate module
+            J = judge.Judge()
+            J.world.save('game.state', player=BLUE)
+            self.assertEqual(J.world.pos_opponent[1],J.world.pos_player[1])    # Same axial
+            self.assertEqual(abs(J.world.pos_opponent[0] - J.world.pos_player[0]), 15)    # Opposite sides
+            self.assertEqual(J.adjudicate('game.state', new_move=None), None)
+            print("Blue starts at (%d,%d)" % J.world.pos_player)
+            print("Red starts at (%d,%d)" % J.world.pos_opponent)
+            winner = None
+            player = RED
+            while (winner == None):
+                if player == BLUE:
+                    player = RED
+                    # Red plays with the naive random-move strategy
+                    S = tron.Strategy()
+                else:
+                    player = BLUE
+                    # Blue plays with the strategy under test
+                    S = minmaxflood_i.Strategy()
+                shutil.copyfile('game.state', 'game.state.bak')
+                J.world.save('game.state', player=player)
+                W = tron.World('game.state')
+                start_time = time.time()
+                S.move(W)
+                shutil.copyfile('game.state', 'game.state.bak')
+                W.save('game.state')
+                # self.assertLess(time.time() - start_time, MAX_MOVE_TIME)
+                winner = J.adjudicate('game.state', new_move=player)
+
+            self.assertNotEqual(winner, None)
+
+            world_map = viz.WorldMap()
+            world_map.plot_trace(J.trace_blue,J.trace_red)
+            world_map.plot_points(J.world.empty_space(),'g')
+            world_map.show()
+
+
 
 
 # TODO: Note that "Each player will start on exactly opposite sides of the sphere."

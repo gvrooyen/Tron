@@ -10,16 +10,20 @@ class StateFileException(Exception):
 #noinspection PyStringFormat
 class Judge(object):
 
-    def __init__(self, pos_blue = None, pos_red = None, world_size = 30):
+    def __init__(self, pos_blue = None, pos_red = None, world_size = 30, double_random_start = False):
 
         self.world_size = world_size
 
         if not pos_blue:
-            pos_blue = (random.randint(0, world_size-1), random.randint(0, world_size-1))
+            # Exclude poles as starting positions
+            pos_blue = (random.randint(0, world_size-1), random.randint(1, world_size-2))
         if not pos_red:
             pos_red = pos_blue
         while pos_red == pos_blue:
-            pos_red = (random.randint(0, world_size-1), random.randint(0, world_size-1))
+            if double_random_start:
+                pos_red = (random.randint(0, world_size-1), random.randint(1, world_size-2))
+            else:
+                pos_red = ((pos_blue[0] + world_size/2) % world_size, pos_blue[1])
 
         # Start with an empty world
         self.world = tron.World(world_size=world_size)

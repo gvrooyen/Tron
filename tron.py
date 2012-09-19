@@ -272,6 +272,33 @@ class World(object):
 
         return result
 
+    def valid_moves(self, opponent=False):
+        """
+        Return a set of valid moves from the current player (opponent) position.
+        """
+
+        if opponent:
+            pos = self.pos_player
+        else:
+            pos = self.pos_opponent
+
+        unclaimed = self.empty_space()
+        result = set()
+
+        if Position(pos).at_north_pole():
+            adjacent = set([(x,1) for x in xrange(0,self.world_size)])
+        elif Position(pos).at_south_pole():
+            adjacent = set([(x,self.world_size-2) for x in xrange(0,self.world_size)])
+        else:
+            adjacent = {Position(pos).north().to_tuple(), Position(pos).south().to_tuple(),
+                        Position(pos).east().to_tuple(), Position(pos).west().to_tuple()}
+        for a in adjacent:
+            if a in unclaimed:
+                # unclaimed.remove(a)
+                result.add(a)
+
+        return result
+
     def prospect(self, opponent=False, turns=30):
         """
         A liberty-based heuristic that calculates how much occupiable free space surrounds a player.
@@ -294,7 +321,8 @@ class World(object):
                 domain = player_domain
             new_frontier = set()
             for pos in frontier:
-                # Find all adjacent coordinates that are still unclaimed, and claim them for the new frontier
+                # Find all adjacent coordinates that are still unclaimed, and claim them for the new frontier.
+                # This duplicates code in the self.valid_moves() method; candidate for refactoring.
                 if Position(pos).at_north_pole():
                     adjacent = set([(x,1) for x in xrange(0,self.world_size)])
                 elif Position(pos).at_south_pole():
@@ -351,6 +379,9 @@ class World(object):
 class Strategy(object):
     """Abstract base class for player strategies."""
 
+    def __init__(self):
+        self.time_limit = 4.5
+
     def move(self, world, debug=False):
         """
         Perform the optimal move for this strategy, based on the world state.
@@ -358,7 +389,7 @@ class Strategy(object):
         The default (dummy/reference) strategy is to make a random valid move.
         """
 
-        pos = Position(world.pos_player.pos)
+        pos = Position(world.pos_player.to_tuple())
 
         # Handle the poles first, they're always tricksy
 
