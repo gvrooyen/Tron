@@ -88,8 +88,8 @@ class Strategy(tron.Strategy):
 
         # TODO: Optimise utility calculation
 
-        player = prospect[0] - 1
-        opponent = prospect[1] - 1
+        player = len(prospect[0]) - 1
+        opponent = len(prospect[1]) - 1
 
         if opponent == 0:
             if player == 0:
