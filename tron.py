@@ -313,7 +313,7 @@ class World(object):
 
         # TODO: This is likely to give a better estimate if the len(frontier) clauses are removed
         #       so that the other player can continue expanding for the specified number of turns.
-        while ((len(player_frontier) > 0) or (len(opponent_frontier) > 0)) and (turn_count < turns):
+        while (turn_count < turns):
             turn_count += 1
             if opponent:
                 frontier = opponent_frontier
