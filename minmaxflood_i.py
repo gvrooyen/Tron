@@ -164,7 +164,7 @@ class Strategy(tron.Strategy):
                 # At the point when the world is first rendered (i.e. just before expanding the frontier) is a good
                 # time to calculate the current state's utility. The utility is a tuple of the form:
                 #     (player_flood_liberties, opponent_flood_liberties)
-                state.utility = self.utility(world_copy.prospect(opponent = opponent_move))
+                state.utility = self.utility(world_copy.prospect(opponent = opponent_move, turns = 15))
                 if state.parent != None:
                     # If we're not at the root node right now, reset the parent's utility to None (it was just
                     # a heuristic estimate anyway). This will be useful once we start backpropagating utilities

@@ -180,7 +180,7 @@ class TestStateFile(unittest.TestCase):
 #        world_map.show()
 
     def test_minmaxflood_i(self):
-        for seed in xrange(56,100):
+        for seed in xrange(74,100):
             random.seed(seed)
             # TODO: The basic strategy test loop can be factored out into a separate module
             J = judge.Judge()

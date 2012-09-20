@@ -76,4 +76,6 @@ class WorldMap(object):
     def save(self, title = None, filename = 'world.png'):
         if title:
             plt.title(title)
-        plt.savefig(filename, dpi=300)
+        fig = plt.gcf()
+        fig.set_size_inches(16,12)
+        plt.savefig(filename, dpi=100)
