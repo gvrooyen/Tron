@@ -1,7 +1,5 @@
-/* "player" and "blue" are equivalent, as are "opponent" and "red". The different names exist so that games
-   strategy code (policies) can refer to the player and the opponent, while adjudicating code (that needs to take
-   both players' interests into account) can refer to the blue and the red player.
-*/
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
 #include <utility>
 #include <map>
@@ -19,23 +17,13 @@ const int BLUE_WALL = 2;
 const int OPPONENT_WALL = 3;
 const int RED_WALL = 3;
 
-const pair <int, int> SOUTH (0, -1);
-const pair <int, int> NORTH (0, +1);
-const pair <int, int> EAST (+1, 0);
-const pair <int, int> WEST (-1, 0);
+typedef pair<int,int> Move;
 
-struct STATE {
-    static map <string,int> create_map()
-        {
-          map <string,int> m;
-          m["clear"] = EMPTY;
-          m["you"] = PLAYER;
-          m["opponent"] = OPPONENT;
-          m["yourwall"] = PLAYER_WALL;
-          m["opponentwall"] = OPPONENT_WALL;
-          return m;
-        }
-    static const map <string, int> MAP;
-};
+const Move SOUTH (0, -1);
+const Move NORTH (0, +1);
+const Move EAST (+1, 0);
+const Move WEST (-1, 0);
 
-const map <string, int> STATE::MAP =  STATE::create_map();
+int State(string description);
+
+#endif

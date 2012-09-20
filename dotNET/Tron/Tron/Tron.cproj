@@ -32,6 +32,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="main.cpp" />
+    <Compile Include="minmaxflood_i.cpp" />
+    <Compile Include="constants.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="constants.h" />
