@@ -1,6 +1,6 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Tron/minmaxflood_i.h">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Tron/constants.h">
     <Files>
       <File FileName="Tron/main.cpp" Line="5" Column="1" />
       <File FileName="Tron/constants.h" Line="42" Column="1" />

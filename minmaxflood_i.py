@@ -9,7 +9,7 @@ from math import *
 
 class State(object):
 
-    def __init__(self, parent = None, move = None):
+    def __init__(self, parent = None, last_move = None):
 
         # A list of valid moves from the current state, for the player whose turn it is. The list of moves is
         # a list of tuples of the form [((23,1), state1), ((22,2), state2), ((24,2), state3)]. Each element
@@ -23,7 +23,7 @@ class State(object):
         self.parent = parent
 
         # The coordinates that the parent had to move to to arrive at this state. This is None for the root state.
-        self.last_move = move
+        self.last_move = last_move
 
         # The optimal next move to make (set during minimax backpropagation)
         self.next_move = None
