@@ -26,6 +26,7 @@ const Move NORTH (0, +1);
 const Move EAST (+1, 0);
 const Move WEST (-1, 0);
 
-int State(string description);
+int state_value(string description);
+string state_string(int value);
 
 #endif
