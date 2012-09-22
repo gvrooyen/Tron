@@ -34,9 +34,13 @@
     <Compile Include="main.cpp" />
     <Compile Include="minmaxflood_i.cpp" />
     <Compile Include="constants.cpp" />
+    <Compile Include="tron.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="constants.h" />
     <None Include="minmaxflood_i.h" />
+    <None Include="tron.h" />
+    <None Include="rcptr.h" />
+    <None Include="rcptr.tcc" />
   </ItemGroup>
 </Project>

@@ -1,12 +1,13 @@
 #include "minmaxflood_i.h"
 #include <limits>
 
-State::State() {
+inline State::State() {
 	utility = numeric_limits<float>::infinity();
 	depth = 0;
 }
 
-State::State(RCPtr<State> _parent, Move _last_move) {
+inline State::State(RCPtr<State> _parent, Move _last_move) {
+	utility = numeric_limits<float>::infinity();
 	parent = _parent;
 	last_move = _last_move;
 	if (parent.objPtr() == 0) {

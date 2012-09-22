@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <utility>
-#include "rcptr.hpp"
+#include "rcptr.h"
 #include "constants.h"
 
 using namespace std;
@@ -18,6 +18,7 @@ class State {
   public:
     State();
     State(RCPtr<State> _parent, Move _last_move);
+    // TODO: RCPtr<World> render(RCPtr<World> world);
 };
 
 #endif
