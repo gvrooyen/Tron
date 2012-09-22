@@ -81,9 +81,28 @@ def gold10(N = 1023, tapsets = (0,1)):
 def list2bin(E):
     return sum([a*2**e for (e,a) in enumerate(E[::-1])])
 
-def save_gold10(bits = 64, filename = 'zobrist.idx', N = 1023, tapsets = (0,1)):
+def save_gold10(bits = 64, filename = 'zobrist.h', N = 1023, tapsets = (0,1), style = 'c'):
     G = gold10(N,tapsets)
     nums = [list2bin(g[0:bits]) for g in G]
-    return nums
+    F = open(filename, 'w')
+    if style == 'c':
+        guard = filename.upper().replace('.', '_')
+        F.write("#ifndef %s\n" % guard)
+        F.write("#define %s\n\n" % guard)
+        F.write("using namespace std;\n\n")
+        F.write("long long int zobrist[1023] = {\n")
+    elif style == 'python':
+        F.write("zobrist = [\n")
+    for n in nums[:-1]:
+        F.write('    ' + str(n) + ',\n')
+    F.write('    ' + str(n) + '\n')
+    if style == 'c':
+        F.write("};\n\n")
+        F.write("#endif\n")
+    elif style == 'python':
+        F.write("]\n")
+    F.close()
+
+
 
 
