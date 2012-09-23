@@ -31,53 +31,59 @@ inline Position::Position(int x, int y) {
 
 inline RCPtr<Position> Position::north() {
 	// Returns the coordinates north of the current position, or (-1,-1) if it's at one of the poles.
-	if (at_pole())
+	if (at_pole()) {
 		return RCPtr<Position> ( new Position(-1,-1) );
-	else
+	} else {
 		return RCPtr<Position> ( new Position(pos.first, pos.second-1) );
+	}
 }
 	
 inline RCPtr<Position> Position::south() {
 	// Returns the coordinates south of the current position, or (-1,-1) if it's at one of the poles.
-	if (at_pole())
+	if (at_pole()) {
 		return RCPtr<Position> ( new Position(-1,-1) );
-	else
+	} else {
 		return RCPtr<Position> ( new Position(pos.first, pos.second+1) );
+	}
 }
 
 inline RCPtr<Position> Position::east() {
-	if (pos.first == world_size - 1)
+	if (pos.first == world_size - 1) {
 		return RCPtr<Position> ( new Position(0, pos.second) );
-	else
+	} else {
 		return RCPtr<Position> ( new Position(pos.first+1, pos.second) );
+	}
 }
 
 inline RCPtr<Position> Position::west() {
-	if (pos.first == 0)
+	if (pos.first == 0) {
 		return RCPtr<Position> ( new Position(world_size-1, pos.second) );
-	else
+	} else {
 		return RCPtr<Position> ( new Position(pos.first-1, pos.second) );	
+	}
 }
 
 inline void Position::go_north(int lon) {
 	// TODO: This is inefficient; refactor so that north(), etc. can generate pairs directly
 	RCPtr<Position> new_pos = north();
 	pair<int,int> t_new_pos = new_pos->to_tuple();
-	if (t_new_pos.first > -1)
+	if (t_new_pos.first > -1) {
 		pos = t_new_pos;
-	else
+	} else {
 		if (at_south_pole()) pos = pair<int,int> (lon, world_size-2);
 		else assert(false);
+	}
 }
 
 inline void Position::go_south(int lon) {
 	RCPtr<Position> new_pos = south();
 	pair<int,int> t_new_pos = new_pos->to_tuple();
-	if (t_new_pos.first > -1)
+	if (t_new_pos.first > -1) {
 		pos = t_new_pos;
-	else
+	} else {
 		if (at_north_pole()) pos = pair<int,int> (lon, 1);
 		else assert(false);
+	}
 }
 
 inline void Position::go_east() {
@@ -93,28 +99,30 @@ inline void Position::go_west() {
 bool Position::is_adjacent(RCPtr<Position> _pos) {
 	assert(_pos->to_tuple().first >= 0);
 	assert(_pos->to_tuple().second < world_size);
-	if (at_south_pole())
+	if (at_south_pole()) {
 		return _pos->to_tuple().second == world_size - 2;
-	else if (at_north_pole())
+	} else if (at_north_pole()) {
 		return _pos->to_tuple().second == 1;
-	else if (_pos->at_south_pole())
+	} else if (_pos->at_south_pole()) {
 		return pos.second == world_size - 2;
-	else if (_pos->at_north_pole())
+	} else if (_pos->at_north_pole()) {
 		return pos.second == 1;
-	else
+	} else {
 		return ( (west()->to_tuple() == _pos->to_tuple()) ||
 		         (east()->to_tuple() == _pos->to_tuple()) ||
 		         (north()->to_tuple() == _pos->to_tuple()) ||
 		         (south()->to_tuple() == _pos->to_tuple()) );
+	}
 }
 
 inline pair<int,int> Position::to_tuple() {
-	if (at_north_pole())
+	if (at_north_pole()) {
 		return pair<int,int>(0,0);
-	else if (at_south_pole())
+	} else if (at_south_pole()) {
 		return pair<int,int>(0,world_size-1);
-	else
+	} else {
 		return pos;
+	}
 }
 
 World::World(string state_file) {
@@ -174,7 +182,19 @@ inline void World::set_state(Position pos, int state) {
 	} else world[x][y] = state;
 }
 
-inline void World::move_player(Position pos, bool opponent) {
+void World::set_player(Position pos, bool opponent) {
+	if (opponent) {
+		set_state(pos_opponent, EMPTY);
+		set_state(pos, OPPONENT);
+		pos_opponent = pos;
+	} else {
+		set_state(pos_player, EMPTY);
+		set_state(pos, PLAYER);
+		pos_player = pos;
+	}
+}
+
+void World::move_player(Position pos, bool opponent) {
 	if (opponent) {
 		set_state(pos_opponent, OPPONENT_WALL);
 		set_state(pos, OPPONENT);
@@ -193,13 +213,13 @@ int World::liberties(bool opponent) {
 	if (opponent) pos = pos_opponent;
 	else pos = pos_player;
 	
-	if (pos.at_south_pole())
+	if (pos.at_south_pole()) {
 		for (int i = 0; i < world_size; i++)
 			if (state(i, world_size-2) == EMPTY) result++;
-	else if (pos.at_north_pole())
+	} else if (pos.at_north_pole()) {
 		for (int i = 0; i < world_size; i++)
 			if (state(i, 1) == EMPTY) result++;
-	else {
+	} else {
 		if (state(pos.north()) == EMPTY) result++;
 		if (state(pos.south()) == EMPTY) result++;
 		if (state(pos.east()) == EMPTY) result++;
@@ -245,13 +265,13 @@ set< RCPtr<Position> > World::valid_moves(bool opponent) {
 	if (opponent) pos = pos_player;
 	else pos = pos_opponent;
 	
-	if (pos.at_north_pole())
+	if (pos.at_north_pole()) {
 		for (int x = 0; x < world_size; x++)
 			adjacent.insert( RCPtr<Position> (new Position(x,1)) );
-	else if (pos.at_south_pole())
+	} else if (pos.at_south_pole()) {
 		for (int x = 0; x < world_size; x++)
 			adjacent.insert( RCPtr<Position> (new Position(x,world_size-2)) );
-	else {
+	} else {
 		adjacent.insert( pos.north() );
 		adjacent.insert( pos.south() );
 		adjacent.insert( pos.east() );
@@ -296,13 +316,13 @@ pair<int,int> World::prospect(bool opponent, int plies) {
 		for (set< RCPtr<Position> >::iterator pos = frontier->begin(); pos != frontier->end(); pos++) {
 			set< RCPtr<Position> > adjacent;
 			
-			if ((*pos)->at_north_pole())
+			if ((*pos)->at_north_pole()) {
 				for (int x = 0; x < world_size; x++)
 					adjacent.insert( RCPtr<Position> (new Position(x,1)) );
-			else if ((*pos)->at_south_pole())
+			} else if ((*pos)->at_south_pole()) {
 				for (int x = 0; x < world_size; x++)
 					adjacent.insert( RCPtr<Position> (new Position(x,world_size-2)) );
-			else {
+			} else {
 				adjacent.insert( (*pos)->north() );
 				adjacent.insert( (*pos)->south() );
 				adjacent.insert( (*pos)->east() );

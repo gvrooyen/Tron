@@ -38,12 +38,55 @@ void test_movement() {
 	assert(P.east()->y() == 0);
 	assert(P.west()->x() == 0);
 	assert(P.west()->y() == 0);
+	assert(P.at_north_pole());
+	assert(! P.at_south_pole());
+	assert(! P.is_adjacent(RCPtr<Position> (new Position(29,0))));
+	assert(P.is_adjacent(RCPtr<Position> (new Position(17,1))));
 
+	P = Position(29,29);
+	assert(P.north()->x() == -1);
+	assert(P.north()->y() == -1);
+	assert(P.south()->x() == -1);
+	assert(P.south()->y() == -1);
+	assert(P.east()->x() == 0);
+	assert(P.east()->y() == 29);
+	assert(P.west()->x() == 0);
+	assert(P.west()->y() == 29);
+	assert(! P.at_north_pole());
+	assert(P.at_south_pole());
+	assert(! P.is_adjacent(RCPtr<Position> (new Position(0,29))));
+	assert(P.is_adjacent(RCPtr<Position> (new Position(19,28))));
+}
+
+void test_liberties() {
+	cout << "- Testing world behaviour and liberty calculation" << endl;
+	World W = World();
+
+	W.set_player(Position(10,10), false);
+	W.set_player(Position(20,20), true);
+	assert(W.liberties() == 4);
+	assert(W.liberties(true) == 4);
+
+	W.move_player(Position(10,11), false);
+	W.move_player(Position(20,21), true);
+	W.move_player(Position(21,21), true);
+	W.move_player(Position(21,20), true);
+	assert(W.liberties() == 3);
+	assert(W.liberties(true) == 2);
+
+	W.move_player(Position(17,1), false);
+	W.move_player(Position(5,0), false);
+	W.move_player(Position(29,29), true);
+	assert(W.liberties() == 29);
+	assert(W.liberties(true) == 30);
+
+	// NEXT: Calculate empty space
 }
 
 void run_tests() {
 	cout << "Starting unit tests..." << endl;
 	test_movement();
+	test_liberties();
 	cout << "All tests passed!" << endl;
 }
 

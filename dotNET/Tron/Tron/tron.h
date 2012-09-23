@@ -43,7 +43,8 @@ class World {
 	inline int state(RCPtr<Position> pos);
 	inline int state(int x, int y);
 	inline void set_state(Position pos, int state);
-	inline void move_player(Position pos, bool opponent = false);
+	void set_player(Position pos, bool opponent = false);
+	void move_player(Position pos, bool opponent = false);
 	void move_blue(Position pos) { move_player(pos); }
 	void move_red(Position pos) { move_player(pos, true); }
 	int liberties(bool opponent = false);
