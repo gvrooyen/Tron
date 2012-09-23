@@ -17,13 +17,15 @@ Position::Position() {
 
 inline Position::Position(pair<int,int> _pos) {
 	pos = _pos;
-	assert(pos.first >= 0);
+	normalise();
+	assert(pos.first >= -1);
 	assert(pos.second < world_size);
 }
 
 inline Position::Position(int x, int y) {
 	pos = pair<int,int>(x,y);
-	assert(pos.first >= 0);
+	normalise();
+	assert(pos.first >= -1);
 	assert(pos.second < world_size);
 }
 

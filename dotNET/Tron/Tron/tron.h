@@ -11,6 +11,7 @@ using namespace std;
 class Position {
 	// TODO: It could be very efficient to implement this as a singleton class
 	pair<int,int> pos;
+	void normalise() { if ((pos.second == 0) || (pos.second == world_size-1)) pos.first = 0; };
   public:
     Position();
 	Position(pair<int,int> _pos);
