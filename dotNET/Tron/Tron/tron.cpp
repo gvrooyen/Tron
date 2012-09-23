@@ -152,8 +152,8 @@ World::World(string state_file) {
 					assert(y >= 0);
 					assert(y < world_size);
 					world[x][y] = state_value(tokens[2]);
-					if (world[x][y] == PLAYER) pos_player = Position(x,y);
-					else if (world[x][y] == OPPONENT) pos_opponent = Position(x,y);
+					if (world[x][y] == PLAYER) pos_player = RCPtr<Position> (new Position(x,y));
+					else if (world[x][y] == OPPONENT) pos_opponent = RCPtr<Position> (new Position(x,y));
 				} else if (tokens.size() == 0) {
 					if (line_num <= world_size*world_size)
 						cerr << "Empty line number " << line_num << " of " << state_file << " skipped." << endl;
@@ -164,14 +164,9 @@ World::World(string state_file) {
 		}
 		else cerr << "Unable to read specified state file: " << state_file << endl;
 	} else {
-		pos_player = Position(-1,-1);
-		pos_opponent = Position(-1,-1);
+		pos_player = RCPtr<Position> (new Position(-1,-1));
+		pos_opponent = RCPtr<Position> (new Position(-1,-1));
 	}
-}
-
-inline int World::state(Position pos) {
-	if (pos.x() == -1) return EMPTY;
-	return world[pos.x()][pos.y()];
 }
 
 inline int World::state(RCPtr<Position> pos) {
@@ -184,9 +179,9 @@ inline int World::state(int x, int y) {
 	return world[x][y];
 }
 
-inline void World::set_state(Position pos, int state) {
-	int x = pos.x();
-	int y = pos.y();
+inline void World::set_state(RCPtr<Position> pos, int state) {
+	int x = pos->x();
+	int y = pos->y();
 	if (x == -1) {
 		// pass
 	} else if (y == 0) {
@@ -198,7 +193,7 @@ inline void World::set_state(Position pos, int state) {
 	} else world[x][y] = state;
 }
 
-void World::set_player(Position pos, bool opponent) {
+void World::set_player(RCPtr<Position> pos, bool opponent) {
 	if (opponent) {
 		// set_state(pos_opponent, EMPTY);
 		set_state(pos, OPPONENT);
@@ -210,7 +205,7 @@ void World::set_player(Position pos, bool opponent) {
 	}
 }
 
-void World::move_player(Position pos, bool opponent) {
+void World::move_player(RCPtr<Position> pos, bool opponent) {
 	if (opponent) {
 		set_state(pos_opponent, OPPONENT_WALL);
 		set_state(pos, OPPONENT);
@@ -223,23 +218,23 @@ void World::move_player(Position pos, bool opponent) {
 }
 
 int World::liberties(bool opponent) {
-	Position pos;
+	RCPtr<Position> pos;
 	int result = 0;
 	
 	if (opponent) pos = pos_opponent;
 	else pos = pos_player;
 	
-	if (pos.at_south_pole()) {
+	if (pos->at_south_pole()) {
 		for (int i = 0; i < world_size; i++)
 			if (state(i, world_size-2) == EMPTY) result++;
-	} else if (pos.at_north_pole()) {
+	} else if (pos->at_north_pole()) {
 		for (int i = 0; i < world_size; i++)
 			if (state(i, 1) == EMPTY) result++;
 	} else {
-		if (state(pos.north()) == EMPTY) result++;
-		if (state(pos.south()) == EMPTY) result++;
-		if (state(pos.east()) == EMPTY) result++;
-		if (state(pos.west()) == EMPTY) result++;
+		if (state(pos->north()) == EMPTY) result++;
+		if (state(pos->south()) == EMPTY) result++;
+		if (state(pos->east()) == EMPTY) result++;
+		if (state(pos->west()) == EMPTY) result++;
 	}
 	
 	return result;
@@ -272,7 +267,7 @@ int World::count_empty_space() {
 }
 
 set< RCPtr<Move> > World::valid_moves(bool opponent) {
-	Position pos;
+	RCPtr<Position> pos;
 	RCPtr<Move> new_move;
 	
 	set< RCPtr<Move> > result;
@@ -282,17 +277,17 @@ set< RCPtr<Move> > World::valid_moves(bool opponent) {
 	if (opponent) pos = pos_player;
 	else pos = pos_opponent;
 	
-	if (pos.at_north_pole()) {
+	if (pos->at_north_pole()) {
 		for (int x = 0; x < world_size; x++)
 			adjacent.insert( RCPtr<Position> (new Position(x,1)) );
-	} else if (pos.at_south_pole()) {
+	} else if (pos->at_south_pole()) {
 		for (int x = 0; x < world_size; x++)
 			adjacent.insert( RCPtr<Position> (new Position(x,world_size-2)) );
 	} else {
-		adjacent.insert( pos.north() );
-		adjacent.insert( pos.south() );
-		adjacent.insert( pos.east() );
-		adjacent.insert( pos.west() );
+		adjacent.insert( pos->north() );
+		adjacent.insert( pos->south() );
+		adjacent.insert( pos->east() );
+		adjacent.insert( pos->west() );
 	}
 	
 	for (set< RCPtr<Position> >::iterator a = adjacent.begin(); a != adjacent.end(); a++)
@@ -310,8 +305,8 @@ pair<int,int> World::prospect(bool opponent, int plies) {
 	set< RCPtr<Position> > player_domain;
 	set< RCPtr<Position> > opponent_domain;
 	
-	player_frontier.insert( RCPtr<Position> ( new Position(pos_player) ) );
-	opponent_frontier.insert( RCPtr<Position> ( new Position(pos_opponent) ) );
+	player_frontier.insert(pos_player);
+	opponent_frontier.insert(pos_opponent);
 	
 	RCPtr< set< RCPtr<Position> > > frontier;
 	RCPtr< set< RCPtr<Position> > > domain;
@@ -378,6 +373,7 @@ void World::save(string filename, int player) {
 			for (int y = 0; y < world_size; y++) {
 				file << x << " " << y << " " << state_string(world[x][y]) << endl;
 			}
+		file.close();
 	}
 	else cerr << "Unable to open specified state file: " << filename << endl;
 }
@@ -389,46 +385,50 @@ tron::Strategy::Strategy() {
 void tron::Strategy::move(RCPtr<World> world) {
 	vector<int> lons;
 	
-	Position pos = world->get_pos_player();
+	Position pos = *world->get_pos_player();
+	cout << "Player is at (" << pos.x() << "," << pos.y() << ")" << endl;
 	
 	if (pos.at_south_pole()) {
 		for (int i = 0; i < world_size; i++) lons.push_back(i);
 		random_shuffle(lons.begin(), lons.end());
 		for (vector<int>::iterator lon = lons.begin(); lon != lons.end(); lon++)
 			if (world->state(*lon, world_size-2) == EMPTY) {
-				world->get_pos_player().go_north(*lon);
+				world->get_pos_player()->go_north(*lon);
 				break;
 			}
 	} else if (pos.at_north_pole()) {
 		for (int i = 0; i < world_size; i++) lons.push_back(i);
 		random_shuffle(lons.begin(), lons.end());
-		for (vector<int>::iterator lon = lons.begin(); lon != lons.end(); lon++)
+		for (vector<int>::iterator lon = lons.begin(); lon != lons.end(); lon++) {
 			if (world->state(*lon, 1) == EMPTY) {
-				world->get_pos_player().go_south(*lon);
+				world->get_pos_player()->go_south(*lon);
 				break;
-			}		
+			}
+		}
 	} else {
 		vector<int> moves;
 		for (int i=0; i<4; i++) moves.push_back(i);
 		random_shuffle(moves.begin(), moves.end());
 		
 		for (vector<int>::iterator m = moves.begin(); m != moves.end(); m++) {
-				if ((*m == 0) && (world->state(*pos.north()) == EMPTY)) {
-					world->get_pos_player().go_north();
+				if ((*m == 0) && (world->state(pos.north()) == EMPTY)) {
+					world->get_pos_player()->go_north();
 					break;
-				} else if ((*m == 1) && (world->state(*pos.south()) == EMPTY)) {
-					world->get_pos_player().go_south();
+				} else if ((*m == 1) && (world->state(pos.south()) == EMPTY)) {
+					world->get_pos_player()->go_south();
 					break;
-				} else if ((*m == 2) && (world->state(*pos.east()) == EMPTY)) {
-					world->get_pos_player().go_east();
+				} else if ((*m == 2) && (world->state(pos.east()) == EMPTY)) {
+					world->get_pos_player()->go_east();
 					break;
-				} else if ((*m == 3) && (world->state(*pos.west()) == EMPTY)) {
-					world->get_pos_player().go_west();
+				} else if ((*m == 3) && (world->state(pos.west()) == EMPTY)) {
+					world->get_pos_player()->go_west();
 					break;
 				}
 		}
 	}
 	
+	cout << "Moving to (" << world->get_pos_player()->x() << "," << world->get_pos_player()->y() << ")" << endl;
 	world->set_state(world->get_pos_player(), PLAYER);
-	world->set_state(pos, PLAYER_WALL);
+	cout << "Placing a wall at (" << pos.x() << "," << pos.y() << ")" << endl;
+	world->set_state(RCPtr<Position> (new Position(pos)), PLAYER_WALL);
 }

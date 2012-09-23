@@ -63,21 +63,21 @@ void test_liberties() {
 	World W = World();
 	World W2;
 
-	W.set_player(Position(10,10), false);
-	W.set_player(Position(20,20), true);
+	W.set_player(RCPtr<Position> (new Position(10,10)), false);
+	W.set_player(RCPtr<Position> (new Position(20,20)), true);
 	assert(W.liberties() == 4);
 	assert(W.liberties(true) == 4);
 
-	W.move_player(Position(10,11), false);
-	W.move_player(Position(20,21), true);
-	W.move_player(Position(21,21), true);
-	W.move_player(Position(21,20), true);
+	W.move_player(RCPtr<Position> (new Position(10,11)), false);
+	W.move_player(RCPtr<Position> (new Position(20,21)), true);
+	W.move_player(RCPtr<Position> (new Position(21,21)), true);
+	W.move_player(RCPtr<Position> (new Position(21,20)), true);
 	assert(W.liberties() == 3);
 	assert(W.liberties(true) == 2);
 
-	W.move_player(Position(17,1), false);
-	W.move_player(Position(5,0), false);
-	W.move_player(Position(29,29), true);
+	W.move_player(RCPtr<Position> (new Position(17,1)), false);
+	W.move_player(RCPtr<Position> (new Position(5,0)), false);
+	W.move_player(RCPtr<Position> (new Position(29,29)), true);
 	assert(W.liberties() == 29);
 	assert(W.liberties(true) == 30);
 
@@ -86,10 +86,10 @@ void test_liberties() {
 	W.save("test.state");
 	W2 = World("test.state");
 
-	assert(W2.get_pos_player().x() == 0);
-	assert(W2.get_pos_player().y() == 0);
-	assert(W2.get_pos_opponent().x() == 0);
-	assert(W2.get_pos_opponent().y() == 29);
+	assert(W2.get_pos_player()->x() == 0);
+	assert(W2.get_pos_player()->y() == 0);
+	assert(W2.get_pos_opponent()->x() == 0);
+	assert(W2.get_pos_opponent()->y() == 29);
 	assert(W2.liberties() == 29);
 	assert(W2.liberties(true) == 30);
 	assert(W2.count_empty_space() == (28*30)+2 - 9);

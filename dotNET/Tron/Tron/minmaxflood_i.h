@@ -35,7 +35,7 @@ namespace minmaxflood_i {
 	class Strategy: public tron::Strategy {
 		float calc_utility(pair<int,int> prospect);
 	  public:
-		void move(RCPtr<World> world);
+		virtual void move(RCPtr<World> world);
 	};
 }
 

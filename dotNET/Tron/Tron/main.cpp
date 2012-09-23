@@ -3,6 +3,8 @@
 #include "tron.h"
 #include "minmaxflood_i.h"
 #include "test.h"
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -11,6 +13,9 @@ int main (int argc, char *argv[])
 {
 	string strategy, state_file;
 	tron::Strategy S;
+	RCPtr<World> W;
+
+	srand((unsigned int)time(NULL));
 
 	if (argc < 3) state_file = "world.state";
 	else state_file = argv[2];
@@ -36,5 +41,10 @@ int main (int argc, char *argv[])
 		return 0;
 	}
 
+	W = RCPtr<World> ( new World(state_file) );
+	cout << "Contemplating move..." << endl;
+	S.move(W);
+	W->save(state_file);
+	cout << " Done!" << endl << endl;
 }
 

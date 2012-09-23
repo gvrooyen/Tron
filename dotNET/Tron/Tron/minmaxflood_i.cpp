@@ -25,7 +25,7 @@ RCPtr<World> State::render(RCPtr<World> world) {
 	bool opponent_leaf = true;
 
 	while (s->has_parent()) {
-		Position p = Position(s->last_move);
+		RCPtr<Position> p = RCPtr<Position> (new Position(s->last_move));
 		if (s->depth % 2 == 1) {
 			if (opponent_leaf) {
 				result->set_state(p, OPPONENT);
@@ -67,8 +67,8 @@ float minmaxflood_i::Strategy::calc_utility(pair<int,int> prospect) {
 }
 
 void minmaxflood_i::Strategy::move(RCPtr<World> world) {
-	Position current_player_pos = world->get_pos_player();
-	Position current_opponent_pos = world->get_pos_opponent();
+	RCPtr<Position> current_player_pos = world->get_pos_player();
+	RCPtr<Position> current_opponent_pos = world->get_pos_opponent();
 
 	RCPtr<State> root = RCPtr<State> (new State());
 	set< RCPtr<State> > frontier;

@@ -35,28 +35,27 @@ class Position {
 
 class World {
 	int world[world_size][world_size];
-	Position pos_player;
-	Position pos_opponent;
+	RCPtr<Position> pos_player;
+	RCPtr<Position> pos_opponent;
   public:
 	World(string state_file = "");
-	inline int state(Position pos);
 	inline int state(RCPtr<Position> pos);
 	inline int state(int x, int y);
-	inline void set_state(Position pos, int state);
-	void set_player(Position pos, bool opponent = false);
-	void set_opponent(Position pos) { set_player(pos, true); };
-	void move_player(Position pos, bool opponent = false);
-	void move_opponent(Position pos) { move_player(pos, false); };
-	void move_blue(Position pos) { move_player(pos); }
-	void move_red(Position pos) { move_player(pos, true); }
+	inline void set_state(RCPtr<Position> pos, int state);
+	void set_player(RCPtr<Position> pos, bool opponent = false);
+	void set_opponent(RCPtr<Position> pos) { set_player(pos, true); };
+	void move_player(RCPtr<Position> pos, bool opponent = false);
+	void move_opponent(RCPtr<Position> pos) { move_player(pos, false); };
+	void move_blue(RCPtr<Position> pos) { move_player(pos); }
+	void move_red(RCPtr<Position> pos) { move_player(pos, true); }
 	int liberties(bool opponent = false);
 	set< RCPtr<Position> > empty_space();
 	int count_empty_space();
 	set< RCPtr<Move> > valid_moves(bool opponent = false);
 	pair<int,int> prospect(bool opponent = false, int plies = 30);
 	void save(string filename, int player = BLUE);
-	Position get_pos_player() { return pos_player; }
-	Position get_pos_opponent() { return pos_opponent; }
+	RCPtr<Position> get_pos_player() { return pos_player; }
+	RCPtr<Position> get_pos_opponent() { return pos_opponent; }
 };
 
 namespace tron {
@@ -65,7 +64,7 @@ namespace tron {
 		float time_limit;
 	  public:
   		Strategy();
-  		void move(RCPtr<World> world);
+  		virtual void move(RCPtr<World> world);
 	};
 }
 
