@@ -271,10 +271,11 @@ int World::count_empty_space() {
 	return result;	
 }
 
-set< RCPtr<Position> > World::valid_moves(bool opponent) {
+set< RCPtr<Move> > World::valid_moves(bool opponent) {
 	Position pos;
+	RCPtr<Move> new_move;
 	
-	set< RCPtr<Position> > result;
+	set< RCPtr<Move> > result;
 	set< RCPtr<Position> > adjacent;
 	set< RCPtr<Position> > unclaimed = empty_space();
 
@@ -296,7 +297,8 @@ set< RCPtr<Position> > World::valid_moves(bool opponent) {
 	
 	for (set< RCPtr<Position> >::iterator a = adjacent.begin(); a != adjacent.end(); a++)
 		if (unclaimed.find(*a) != unclaimed.end())
-			result.insert(*a);
+			new_move = RCPtr<Move> ( new Move( (*a)->x(), (*a)->y() ) );
+			result.insert(new_move);
 	
 	return result;	
 }
@@ -381,7 +383,7 @@ void World::save(string filename, int player) {
 }
 
 tron::Strategy::Strategy() {
-	time_limit = 4.5;
+	time_limit = TIME_LIMIT;
 }
 
 void tron::Strategy::move(RCPtr<World> world) {

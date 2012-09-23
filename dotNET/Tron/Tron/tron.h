@@ -52,7 +52,7 @@ class World {
 	int liberties(bool opponent = false);
 	set< RCPtr<Position> > empty_space();
 	int count_empty_space();
-	set< RCPtr<Position> > valid_moves(bool opponent = false);
+	set< RCPtr<Move> > valid_moves(bool opponent = false);
 	pair<int,int> prospect(bool opponent = false, int plies = 30);
 	void save(string filename, int player = BLUE);
 	Position get_pos_player() { return pos_player; }
@@ -61,6 +61,7 @@ class World {
 
 namespace tron {
 	class Strategy {
+	  protected:
 		float time_limit;
 	  public:
   		Strategy();

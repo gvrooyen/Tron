@@ -12,9 +12,9 @@ class Utility {
 	static const int UNKNOWN = 0;
 	static const int ESTIMATED = 1;
 	static const int TRUE = 2;
-	int value;
+	float value;
 	int state;
-	Utility(int _state = UNKNOWN, int _value = 0) { state = _state; value = _value;} ;
+	Utility(int _state = UNKNOWN, float _value = -1.0) { state = _state; value = _value;} ;
 };
 
 class State {
