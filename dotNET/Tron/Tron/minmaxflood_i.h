@@ -5,8 +5,7 @@
 #include <utility>
 #include "rcptr.h"
 #include "constants.h"
-
-using namespace std;
+#include "tron.h"
 
 class Utility {
   public:
@@ -19,15 +18,25 @@ class Utility {
 };
 
 class State {
+  public:
 	Utility utility;
 	RCPtr<State> parent;
 	Move last_move;
 	Move next_move;
 	int depth;
-  public:
-    State();
-    State(RCPtr<State> _parent, Move _last_move);
-    // TODO: RCPtr<World> render(RCPtr<World> world);
+
+    inline State();
+    inline State(RCPtr<State> _parent, Move _last_move);
+    RCPtr<World> render(RCPtr<World> world);
+	bool has_parent() { return parent.objPtr() != 0; };
 };
+
+namespace minmaxflood_i {
+	class Strategy: public tron::Strategy {
+		float calc_utility(pair<int,int> prospect);
+	  public:
+		void move(RCPtr<World> world);
+	};
+}
 
 #endif

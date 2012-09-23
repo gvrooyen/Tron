@@ -15,7 +15,7 @@ Position::Position() {
 	pos.second = -1;
 }
 
-inline Position::Position(pair<int,int> _pos) {
+Position::Position(pair<int,int> _pos) {
 	pos = _pos;
 	normalise();
 	assert(pos.first >= -1);
@@ -200,11 +200,11 @@ inline void World::set_state(Position pos, int state) {
 
 void World::set_player(Position pos, bool opponent) {
 	if (opponent) {
-		set_state(pos_opponent, EMPTY);
+		// set_state(pos_opponent, EMPTY);
 		set_state(pos, OPPONENT);
 		pos_opponent = pos;
 	} else {
-		set_state(pos_player, EMPTY);
+		// set_state(pos_player, EMPTY);
 		set_state(pos, PLAYER);
 		pos_player = pos;
 	}
@@ -380,11 +380,11 @@ void World::save(string filename, int player) {
 	else cerr << "Unable to open specified state file: " << filename << endl;
 }
 
-Strategy::Strategy() {
+tron::Strategy::Strategy() {
 	time_limit = 4.5;
 }
 
-void Strategy::move(RCPtr<World> world) {
+void tron::Strategy::move(RCPtr<World> world) {
 	vector<int> lons;
 	
 	Position pos = world->get_pos_player();

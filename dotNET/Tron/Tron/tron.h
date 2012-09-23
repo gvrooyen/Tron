@@ -44,7 +44,9 @@ class World {
 	inline int state(int x, int y);
 	inline void set_state(Position pos, int state);
 	void set_player(Position pos, bool opponent = false);
+	void set_opponent(Position pos) { set_player(pos, true); };
 	void move_player(Position pos, bool opponent = false);
+	void move_opponent(Position pos) { move_player(pos, false); };
 	void move_blue(Position pos) { move_player(pos); }
 	void move_red(Position pos) { move_player(pos, true); }
 	int liberties(bool opponent = false);
@@ -57,12 +59,14 @@ class World {
 	Position get_pos_opponent() { return pos_opponent; }
 };
 
-class Strategy {
-	float time_limit;
-  public:
-  	Strategy();
-  	void move(RCPtr<World> world);
-};
+namespace tron {
+	class Strategy {
+		float time_limit;
+	  public:
+  		Strategy();
+  		void move(RCPtr<World> world);
+	};
+}
 
 #endif
 

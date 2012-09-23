@@ -10,7 +10,7 @@ using namespace std;
 int main (int argc, char *argv[])
 {
 	string strategy, state_file;
-	Strategy S;
+	tron::Strategy S;
 
 	if (argc < 3) state_file = "world.state";
 	else state_file = argv[2];
@@ -25,13 +25,14 @@ int main (int argc, char *argv[])
 
 	if (strategy == "test") {
 		run_tests();
+		cout << endl;
 		return 0;
 	} else if (strategy == "random") {
-		S = Strategy();
+		S = tron::Strategy();
 	} else if (strategy == "minmaxflood_i") {
-		// TODO
+		S = minmaxflood_i::Strategy();
 	} else {
-		cout << "Usage: TRON <strategy> <statefile>" << endl;
+		cout << "Usage: TRON <strategy> <statefile>" << endl << endl;
 		return 0;
 	}
 
