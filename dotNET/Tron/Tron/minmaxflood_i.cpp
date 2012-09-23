@@ -2,7 +2,7 @@
 #include <limits>
 
 inline State::State() {
-	utility = numeric_limits<float>::infinity();
+	utility = Utility();
 	depth = 0;
 }
 
