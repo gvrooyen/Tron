@@ -5,7 +5,7 @@
 
 using namespace std;
 
-#ifndef DEBUG
+#ifndef TEST
 void run_tests() {
 	cout << "This application was built without test support." << endl;
 }
@@ -61,6 +61,7 @@ void test_movement() {
 void test_liberties() {
 	cout << "- Testing world behaviour and liberty calculation" << endl;
 	World W = World();
+	World W2;
 
 	W.set_player(Position(10,10), false);
 	W.set_player(Position(20,20), true);
@@ -80,7 +81,18 @@ void test_liberties() {
 	assert(W.liberties() == 29);
 	assert(W.liberties(true) == 30);
 
-	// NEXT: Calculate empty space
+	assert(W.count_empty_space() == (28*30)+2 - 9);
+
+	W.save("test.state");
+	W2 = World("test.state");
+
+	assert(W2.get_pos_player().x() == 0);
+	assert(W2.get_pos_player().y() == 0);
+	assert(W2.get_pos_opponent().x() == 0);
+	assert(W2.get_pos_opponent().y() == 29);
+	assert(W2.liberties() == 29);
+	assert(W2.liberties(true) == 30);
+	assert(W2.count_empty_space() == (28*30)+2 - 9);
 }
 
 void run_tests() {

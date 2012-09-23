@@ -126,6 +126,7 @@ inline pair<int,int> Position::to_tuple() {
 }
 
 World::World(string state_file) {
+	int line_num = 0;
 	for (int x = 0; x < world_size; x++)
 		for (int y = 0; y < world_size; y++)
 		  world[x][y] = EMPTY;
@@ -138,12 +139,27 @@ World::World(string state_file) {
 				int x, y;
 
 				getline(file, line);
+				line_num++;
 				tokens = split(line, ' ');
-				istringstream (tokens[0]) >> x;
-				istringstream (tokens[1]) >> y;
-				world[x][y] = state_value(tokens[2]);
-				if (world[x][y] == PLAYER) pos_player = Position(x,y);
-				else if (world[x][y] == OPPONENT) pos_opponent = Position(x,y);
+
+				if (tokens.size() > 3)
+					cerr << "Extra tokens on line " << line_num << " of " << state_file << " ignored." << endl;
+				if (tokens.size() >= 3) {
+					istringstream (tokens[0]) >> x;
+					istringstream (tokens[1]) >> y;
+					assert(x >= 0);
+					assert(x < world_size);
+					assert(y >= 0);
+					assert(y < world_size);
+					world[x][y] = state_value(tokens[2]);
+					if (world[x][y] == PLAYER) pos_player = Position(x,y);
+					else if (world[x][y] == OPPONENT) pos_opponent = Position(x,y);
+				} else if (tokens.size() == 0) {
+					if (line_num <= world_size*world_size)
+						cerr << "Empty line number " << line_num << " of " << state_file << " skipped." << endl;
+				} else {
+					cerr << "Malformed data at line number " << line_num << " of " << state_file << "." << endl;
+				}
 			}
 		}
 		else cerr << "Unable to read specified state file: " << state_file << endl;

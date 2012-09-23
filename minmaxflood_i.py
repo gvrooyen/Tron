@@ -15,6 +15,7 @@ class State(object):
         # a list of tuples of the form [((23,1), state1), ((22,2), state2), ((24,2), state3)]. Each element
         # specifies the world coordinates of the move, and the state object of the corresponding new world
         # state (or None if that state hasn't been expanded yet)
+        # TODO: Remove State.valid_moves (it seems to be unused).
         self.valid_moves = []
 
         # The estimated utility of the current state
