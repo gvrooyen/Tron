@@ -22,8 +22,8 @@ class Position {
 	inline RCPtr<Position> south();
 	inline RCPtr<Position> east();
 	inline RCPtr<Position> west();
-	inline void go_north();
-	inline void go_south();
+	inline void go_north(int lon = 0);
+	inline void go_south(int lon = 0);
 	inline void go_east();
 	inline void go_west();
 	bool is_adjacent(RCPtr<Position> _pos);
@@ -50,8 +50,16 @@ class World {
 	set< RCPtr<Position> > valid_moves(bool opponent = false);
 	pair<int,int> prospect(bool opponent = false, int plies = 30);
 	void save(string filename, int player = BLUE);
+	Position get_pos_player() { return pos_player; }
+	Position get_pos_opponent() { return pos_opponent; }
 };
 
+class Strategy {
+	float time_limit;
+  public:
+  	Strategy();
+  	void move(RCPtr<World> world);
+};
 
 #endif
 

@@ -172,7 +172,7 @@ class TestStateFile(unittest.TestCase):
                 break
 
 
-        (player_domain, opponent_domain) = J.world.prospect(turns=40)
+        (player_domain, opponent_domain) = J.world.prospect(plies=40)
 #        world_map = viz.WorldMap()
 #        world_map.plot_trace(J.trace_blue,J.trace_red)
 #        world_map.plot_points(player_domain, 'c')
@@ -180,7 +180,7 @@ class TestStateFile(unittest.TestCase):
 #        world_map.show()
 
     def test_minmaxflood_i(self):
-        for seed in xrange(74,100):
+        for seed in xrange(101,103):
             random.seed(seed)
             # TODO: The basic strategy test loop can be factored out into a separate module
             J = judge.Judge()
@@ -224,10 +224,4 @@ class TestStateFile(unittest.TestCase):
             # world_map.plot_points(J.world.empty_space(),'g')
             world_map.save(result, str(seed)+'.png')
 
-
-
-
-# TODO: Note that "Each player will start on exactly opposite sides of the sphere."
-#       Starting points for each player will be on exactly opposing points of the same Y axial, where Y > 0 and Y < 29,
-#       i.e excluding the poles. This will neither advantage nor disadvantage any specific player. To clarify: If you
-#       start at position (X, Y) your opponent will start at position ( (X + 15) % 30, Y).
+# TODO: Add a unit test for the number of liberties at the north and the south pole (it was calculated incorrectly)

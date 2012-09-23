@@ -5,6 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 
@@ -55,23 +57,25 @@ inline RCPtr<Position> Position::west() {
 		return RCPtr<Position> ( new Position(pos.first-1, pos.second) );	
 }
 
-inline void Position::go_north() {
+inline void Position::go_north(int lon) {
 	// TODO: This is inefficient; refactor so that north(), etc. can generate pairs directly
 	RCPtr<Position> new_pos = north();
 	pair<int,int> t_new_pos = new_pos->to_tuple();
 	if (t_new_pos.first > -1)
 		pos = t_new_pos;
 	else
-		assert(false);
+		if (at_south_pole()) pos = pair<int,int> (lon, world_size-2);
+		else assert(false);
 }
 
-inline void Position::go_south() {
+inline void Position::go_south(int lon) {
 	RCPtr<Position> new_pos = south();
 	pair<int,int> t_new_pos = new_pos->to_tuple();
 	if (t_new_pos.first > -1)
 		pos = t_new_pos;
 	else
-		assert(false);
+		if (at_north_pole()) pos = pair<int,int> (lon, 1);
+		else assert(false);
 }
 
 inline void Position::go_east() {
@@ -331,5 +335,55 @@ void World::save(string filename, int player) {
 			}
 	}
 	else cerr << "Unable to open specified state file: " << filename << endl;
+}
 
+Strategy::Strategy() {
+	time_limit = 4.5;
+}
+
+void Strategy::move(RCPtr<World> world) {
+	vector<int> lons;
+	
+	Position pos = world->get_pos_player();
+	
+	if (pos.at_south_pole()) {
+		for (int i = 0; i < world_size; i++) lons.push_back(i);
+		random_shuffle(lons.begin(), lons.end());
+		for (vector<int>::iterator lon = lons.begin(); lon != lons.end(); lon++)
+			if (world->state(*lon, world_size-2) == EMPTY) {
+				world->get_pos_player().go_north(*lon);
+				break;
+			}
+	} else if (pos.at_north_pole()) {
+		for (int i = 0; i < world_size; i++) lons.push_back(i);
+		random_shuffle(lons.begin(), lons.end());
+		for (vector<int>::iterator lon = lons.begin(); lon != lons.end(); lon++)
+			if (world->state(*lon, 1) == EMPTY) {
+				world->get_pos_player().go_south(*lon);
+				break;
+			}		
+	} else {
+		vector<int> moves;
+		for (int i=0; i<4; i++) moves.push_back(i);
+		random_shuffle(moves.begin(), moves.end());
+		
+		for (vector<int>::iterator m = moves.begin(); m != moves.end(); m++) {
+				if ((*m == 0) and (world->state(*pos.north()) == EMPTY)) {
+					world->get_pos_player().go_north();
+					break;
+				} else if ((*m == 1) and (world->state(*pos.south()) == EMPTY)) {
+					world->get_pos_player().go_south();
+					break;
+				} else if ((*m == 2) and (world->state(*pos.east()) == EMPTY)) {
+					world->get_pos_player().go_east();
+					break;
+				} else if ((*m == 3) and (world->state(*pos.west()) == EMPTY)) {
+					world->get_pos_player().go_west();
+					break;
+				}
+		}
+	}
+	
+	world->set_state(world->get_pos_player(), PLAYER);
+	world->set_state(pos, PLAYER_WALL);
 }

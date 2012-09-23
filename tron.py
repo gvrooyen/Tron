@@ -228,11 +228,11 @@ class World(object):
         # more general case.
 
         if Position(pos).at_south_pole():
-            for i in xrange(0, self.world_size-1):
+            for i in xrange(0, self.world_size):
                 if self.state((i,self.world_size-2)) == EMPTY:
                     result += 1
         elif Position(pos).at_north_pole():
-            for i in xrange(0, self.world_size-1):
+            for i in xrange(0, self.world_size):
                 if self.state((i,1)) == EMPTY:
                     result += 1
         else:
@@ -299,7 +299,7 @@ class World(object):
 
         return result
 
-    def prospect(self, opponent=False, turns=30):
+    def prospect(self, opponent=False, plies=30):
         """
         A liberty-based heuristic that calculates how much occupiable free space surrounds a player.
         """
@@ -309,12 +309,10 @@ class World(object):
         opponent_frontier = {self.pos_opponent}
         player_domain = set()
         opponent_domain = set()
-        turn_count = 0
+        ply_count = 0
 
-        # TODO: This is likely to give a better estimate if the len(frontier) clauses are removed
-        #       so that the other player can continue expanding for the specified number of turns.
-        while (turn_count < turns):
-            turn_count += 1
+        while (ply_count < plies):
+            ply_count += 1
             if opponent:
                 frontier = opponent_frontier
                 domain = opponent_domain
@@ -413,7 +411,7 @@ class Strategy(object):
                     world.pos_player.go_south(lon)
                     break
             else:
-                raise StrategyException("Trapped at the south pole!")
+                raise StrategyException("Trapped at the north pole!")
         else:
             moves = [NORTH, SOUTH, EAST, WEST]
             random.shuffle(moves)
