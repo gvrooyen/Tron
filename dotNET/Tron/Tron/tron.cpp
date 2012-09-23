@@ -100,9 +100,9 @@ bool Position::is_adjacent(RCPtr<Position> _pos) {
 	else if (_pos->at_north_pole())
 		return pos.second == 1;
 	else
-		return ( (west()->to_tuple() == _pos->to_tuple()) or
-		         (east()->to_tuple() == _pos->to_tuple()) or
-		         (north()->to_tuple() == _pos->to_tuple()) or
+		return ( (west()->to_tuple() == _pos->to_tuple()) ||
+		         (east()->to_tuple() == _pos->to_tuple()) ||
+		         (north()->to_tuple() == _pos->to_tuple()) ||
 		         (south()->to_tuple() == _pos->to_tuple()) );
 }
 
@@ -146,6 +146,11 @@ World::World(string state_file) {
 inline int World::state(Position pos) {
 	if (pos.x() == -1) return EMPTY;
 	return world[pos.x()][pos.y()];
+}
+
+inline int World::state(RCPtr<Position> pos) {
+	if (pos->x() == -1) return EMPTY;
+	return world[pos->x()][pos->y()];	
 }
 
 inline int World::state(int x, int y) {
@@ -193,10 +198,10 @@ int World::liberties(bool opponent) {
 		for (int i = 0; i < world_size; i++)
 			if (state(i, 1) == EMPTY) result++;
 	else {
-		if (pos.north() == EMPTY) result++;
-		if (pos.south() == EMPTY) result++;
-		if (pos.east() == EMPTY) result++;
-		if (pos.west() == EMPTY) result++;
+		if (state(pos.north()) == EMPTY) result++;
+		if (state(pos.south()) == EMPTY) result++;
+		if (state(pos.east()) == EMPTY) result++;
+		if (state(pos.west()) == EMPTY) result++;
 	}
 	
 	return result;
@@ -312,7 +317,7 @@ pair<int,int> World::prospect(bool opponent, int plies) {
 		}
 		
 		frontier = new_frontier;
-		opponent != opponent;		
+		opponent = !opponent;		
 	}
 	
 	player_domain.insert(player_frontier.begin(), player_frontier.end());
@@ -368,16 +373,16 @@ void Strategy::move(RCPtr<World> world) {
 		random_shuffle(moves.begin(), moves.end());
 		
 		for (vector<int>::iterator m = moves.begin(); m != moves.end(); m++) {
-				if ((*m == 0) and (world->state(*pos.north()) == EMPTY)) {
+				if ((*m == 0) && (world->state(*pos.north()) == EMPTY)) {
 					world->get_pos_player().go_north();
 					break;
-				} else if ((*m == 1) and (world->state(*pos.south()) == EMPTY)) {
+				} else if ((*m == 1) && (world->state(*pos.south()) == EMPTY)) {
 					world->get_pos_player().go_south();
 					break;
-				} else if ((*m == 2) and (world->state(*pos.east()) == EMPTY)) {
+				} else if ((*m == 2) && (world->state(*pos.east()) == EMPTY)) {
 					world->get_pos_player().go_east();
 					break;
-				} else if ((*m == 3) and (world->state(*pos.west()) == EMPTY)) {
+				} else if ((*m == 3) && (world->state(*pos.west()) == EMPTY)) {
 					world->get_pos_player().go_west();
 					break;
 				}

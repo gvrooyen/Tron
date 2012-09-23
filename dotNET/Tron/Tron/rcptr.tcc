@@ -119,7 +119,7 @@ inline T& RCPtr<T>::operator*() const {
 
 template<class T>
 inline RCPtr<T>::operator bool() const {
-  return oPtr;
+  return oPtr != 0;
 } // operator bool
   
 //=====================others======================================

@@ -17,7 +17,7 @@ class Position {
 	Position(int x, int y);
 	bool at_north_pole() { return pos.second == 0; };
 	bool at_south_pole() { return pos.second == world_size - 1; };
-	bool at_pole() { return at_north_pole() or at_south_pole(); };
+	bool at_pole() { return at_north_pole() || at_south_pole(); };
 	inline RCPtr<Position> north();
 	inline RCPtr<Position> south();
 	inline RCPtr<Position> east();
@@ -39,6 +39,7 @@ class World {
   public:
 	World(string state_file = "");
 	inline int state(Position pos);
+	inline int state(RCPtr<Position> pos);
 	inline int state(int x, int y);
 	inline void set_state(Position pos, int state);
 	inline void move_player(Position pos, bool opponent = false);

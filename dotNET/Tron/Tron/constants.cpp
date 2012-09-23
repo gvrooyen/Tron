@@ -8,6 +8,7 @@ int state_value(string description) {
 	if (description == "YourWall") return PLAYER_WALL;
 	if (description == "OpponentWall") return OPPONENT_WALL;
 	assert(false);
+	return UNDEFINED;
 }
 
 string state_string(int value) {
@@ -18,4 +19,5 @@ string state_string(int value) {
 		case PLAYER_WALL: return "YourWall";
 		case OPPONENT_WALL: return "OpponentWall";
 	}
+	return "Undefined";
 }

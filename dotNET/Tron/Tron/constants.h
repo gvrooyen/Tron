@@ -9,6 +9,7 @@ using namespace std;
 
 const int world_size = 30;
 
+const int UNDEFINED = -2;
 const int EMPTY = -1;
 const int PLAYER = 0;
 const int BLUE = 0;
