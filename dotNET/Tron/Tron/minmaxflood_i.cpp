@@ -1,13 +1,18 @@
 #include "minmaxflood_i.h"
 #include <limits>
 #include <ctime>
+#include <list>
+
+int State::key_idx = 0;
 
 inline State::State() {
+	key = key_idx++;
 	utility = Utility();
 	depth = 0;
 }
 
 inline State::State(RCPtr<State> _parent, Move _last_move) {
+	key = key_idx++;
 	utility = Utility();
 	parent = _parent;
 	last_move = _last_move;
@@ -67,31 +72,32 @@ float minmaxflood_i::Strategy::calc_utility(pair<int,int> prospect) {
 }
 
 void minmaxflood_i::Strategy::move(RCPtr<World> world) {
+	double time_limit = 10000.0;
 	RCPtr<Position> current_player_pos = world->get_pos_player();
 	RCPtr<Position> current_opponent_pos = world->get_pos_opponent();
 
 	RCPtr<State> root = RCPtr<State> (new State());
-	set< RCPtr<State> > frontier;
-	frontier.insert(root);
-	set< RCPtr<State> > leaves;
+	list< RCPtr<State> > frontier;
+	frontier.push_back(root);
+	list< RCPtr<State> > leaves;
 
 	clock_t start_time = clock();
 	int max_plies = 1024;
 
-	set< RCPtr<State> > last_full_ply;
+	list< RCPtr<State> > last_full_ply;
 	int ply = 0;
 	pair<int,int> p;
 
 	cout << "Calculating!" << endl;
 
 	while (( double(clock() - start_time)/CLOCKS_PER_SEC < time_limit ) && (frontier.size() > 0) && (ply < max_plies) ) {
-		set< RCPtr<State> > new_frontier;
+		list< RCPtr<State> > new_frontier;
 		bool broke_out = false;
 
 		ply++;
 		cout << "Ply " << ply << ", frontier size = " << frontier.size() << endl;
 
-		for (set< RCPtr<State> >::iterator state = frontier.begin(); state != frontier.end(); state++) {
+		for (list< RCPtr<State> >::iterator state = frontier.begin(); state != frontier.end(); state++) {
 			bool opponent_move = ((*state)->depth %2 == 0);
 			RCPtr<World> world_copy = (*state)->render(world);
 			RCPtr< set<Move> > valid_moves;
@@ -112,13 +118,19 @@ void minmaxflood_i::Strategy::move(RCPtr<World> world) {
 				(*state)->parent->utility.state = Utility::UNKNOWN;
 			}
 
-			leaves.insert(*state);
-			leaves.erase((*state)->parent);
+			leaves.push_back(*state);
+
+			for (list< RCPtr<State> >::iterator s = leaves.begin(); s != leaves.end(); s++) {
+				if ((*s)->key == (*state)->parent->key) {
+					leaves.erase(s);
+				}
+			}
+
 			valid_moves = world_copy->valid_moves(opponent_move);
 
 			for (set<Move>::iterator move = valid_moves->begin(); move != valid_moves->end(); move++) {
 				RCPtr<State> new_state = RCPtr<State> ( new State((*state), (*move)) );
-				new_frontier.insert(new_state);
+				new_frontier.push_back(new_state);
 			}
 		}
 
@@ -130,21 +142,21 @@ void minmaxflood_i::Strategy::move(RCPtr<World> world) {
 	cout << "Game tree analysed up to depth " << (*(leaves.begin()))->depth << endl;
 
 	while (leaves.size() > 0) {
-		set< RCPtr<State> > new_leaves;
-		for ( set< RCPtr<State> >::iterator state = leaves.begin(); state != leaves.end(); state++) {
+		list< RCPtr<State> > new_leaves;
+		for ( list< RCPtr<State> >::iterator state = leaves.begin(); state != leaves.end(); state++) {
 			if ( (*state)->depth % 2 == 1 ) {
 				if ( ( (*state)->parent->utility.value < -0.0 ) ||
 					 ( (*state)->parent->utility.value < (*state)->utility.value) ) {
 					(*state)->parent->utility = (*state)->utility;
 					(*state)->parent->next_move = (*state)->last_move;
-					new_leaves.insert( (*state)->parent );
+					new_leaves.push_back( (*state)->parent );
 				}
 			} else {
 				if ( ( (*state)->parent->utility.value < -0.0 ) ||
 					 ( (*state)->parent->utility.value > (*state)->utility.value) ) {
 					(*state)->parent->utility = (*state)->utility;
 					(*state)->parent->next_move = (*state)->last_move;
-					new_leaves.insert( (*state)->parent );
+					new_leaves.push_back( (*state)->parent );
 				}
 			}
 		}

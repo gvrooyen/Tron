@@ -253,7 +253,7 @@ int World::liberties(bool opponent) {
 }
 
 RCPtr< set<Move> > World::empty_space() {
-	RCPtr< set<Move> > result;
+	RCPtr< set<Move> > result = RCPtr< set<Move> > (new set<Move>);
 	
 	if (state(0,0) == EMPTY) result->insert(Move(0,0));
 	if (state(0,world_size-1) == EMPTY) result->insert(Move(0,world_size-1));
@@ -261,7 +261,6 @@ RCPtr< set<Move> > World::empty_space() {
 	for (int x = 0; x < world_size; x++)
 		for (int y = 0; y < world_size-1; y++)
 			if (state(x,y) == EMPTY) {
-				cout << "(" << x << "," << y << ") is empty." << endl;
 				result->insert(Move(x,y));
 			}
 	
@@ -285,12 +284,12 @@ RCPtr< set<Move> > World::valid_moves(bool opponent) {
 	RCPtr<Position> pos;
 	Move new_move;
 	
-	RCPtr< set<Move> > result;
+	RCPtr< set<Move> > result = RCPtr< set<Move> > (new set<Move>);
 	set<Move> adjacent;
 	RCPtr< set<Move> > unclaimed = empty_space();
 
-	if (opponent) pos = pos_player;
-	else pos = pos_opponent;
+	if (opponent) pos = pos_opponent;
+	else pos = pos_player;
 	
 	if (pos->at_north_pole()) {
 		for (int x = 0; x < world_size; x++)
@@ -307,7 +306,7 @@ RCPtr< set<Move> > World::valid_moves(bool opponent) {
 	
 	for (set<Move>::iterator a = adjacent.begin(); a != adjacent.end(); a++) {
 		if (unclaimed->find(*a) != unclaimed->end()) {
-			result->insert(Move(*a));
+			result->insert(Move(a->first, a->second));
 		}
 	}
 	

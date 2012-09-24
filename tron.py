@@ -277,10 +277,11 @@ class World(object):
         Return a set of valid moves from the current player (opponent) position.
         """
 
+        # TODO: Double-check this (order seemed to have been swopped around, fixed now but untested)
         if opponent:
-            pos = self.pos_player
-        else:
             pos = self.pos_opponent
+        else:
+            pos = self.pos_player
 
         unclaimed = self.empty_space()
         result = set()

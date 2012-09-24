@@ -18,7 +18,9 @@ class Utility {
 };
 
 class State {
+	static int key_idx;
   public:
+	int key;
 	Utility utility;
 	RCPtr<State> parent;
 	Move last_move;

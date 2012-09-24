@@ -1,5 +1,6 @@
 #include "test.h"
 #include "tron.h"
+#include "minmaxflood_i.h"
 #include <iostream>
 #include <assert.h>
 
@@ -92,13 +93,34 @@ void test_liberties() {
 	assert(W2.get_pos_opponent()->y() == 29);
 	assert(W2.liberties() == 29);
 	assert(W2.liberties(true) == 30);
+	assert(W2.valid_moves()->size() == 29);
+	assert(W2.valid_moves(true)->size() == 30);
 	assert(W2.count_empty_space() == (28*30)+2 - 9);
+	pair<int,int> P = W2.prospect();
+	assert(P.first == 420);
+	assert(P.second == 415);
+}
+
+void test_AI() {
+	RCPtr<World> W;
+	RCPtr<tron::Strategy> S;
+
+	cout << "- Testing artificial intelligences" << endl;
+	W = RCPtr<World> (new World("test.state"));
+	cout << "  . default" << endl;
+	S = RCPtr<tron::Strategy> (new tron::Strategy());
+	S->move(W);
+	cout << "  . minmaxflood_i" << endl;
+	S = RCPtr<tron::Strategy> (new minmaxflood_i::Strategy());
+	S->move(W);
+
 }
 
 void run_tests() {
 	cout << "Starting unit tests..." << endl;
 	test_movement();
 	test_liberties();
+	test_AI();
 	cout << "All tests passed!" << endl;
 }
 

@@ -180,6 +180,7 @@ class Strategy(tron.Strategy):
                 # This leaf's parent may still be in the list of leaves, but it's been superceded now; remove it.
                 leaves.discard(state.parent)
 
+                # TODO: Double-check this! opponent moves seem to have been calculated incorrectly
                 valid_moves = world_copy.valid_moves(opponent = opponent_move)
                 for move in valid_moves:
                     new_state = State(state, move)
