@@ -111,9 +111,9 @@ void test_AI() {
 	S = RCPtr<tron::Strategy> (new tron::Strategy());
 	S->move(W);
 	cout << "  . minmaxflood_i" << endl;
+	W = RCPtr<World> (new World());
 	W->set_player(RCPtr<Position> (new Position(10,10)), false);
 	W->set_player(RCPtr<Position> (new Position(9,10)), true);
-	W = RCPtr<World> (new World())
 	S = RCPtr<tron::Strategy> (new minmaxflood_i::Strategy());
 	S->move(W);
 

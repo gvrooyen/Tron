@@ -31,18 +31,16 @@ RCPtr<World> State::render(RCPtr<World> world) {
 
 	while (s->has_parent()) {
 		RCPtr<Position> p = RCPtr<Position> (new Position(s->last_move));
-		if (s->depth % 2 == 1) {
+		if (s->depth % 2 == 0) {
 			if (opponent_leaf) {
-				result->set_state(p, OPPONENT);
-				result->set_opponent(p);
+				result->move_opponent(p);
 				opponent_leaf = false;
 			} else {
 				result->set_state(p, OPPONENT_WALL);
 			}
 		} else {
 			if (player_leaf) {
-				result->set_state(p, PLAYER);
-				result->set_player(p);
+				result->move_player(p);
 				player_leaf = false;
 			} else {
 				result->set_state(p, PLAYER_WALL);
@@ -72,7 +70,7 @@ float minmaxflood_i::Strategy::calc_utility(pair<int,int> prospect) {
 }
 
 void minmaxflood_i::Strategy::move(RCPtr<World> world) {
-	double time_limit = 10000.0;
+	// double time_limit = 10000.0;
 	RCPtr<Position> current_player_pos = world->get_pos_player();
 	RCPtr<Position> current_opponent_pos = world->get_pos_opponent();
 
@@ -107,7 +105,8 @@ void minmaxflood_i::Strategy::move(RCPtr<World> world) {
 				break;
 			}
 
-			p = world_copy->prospect(opponent_move);
+			// p = world_copy->prospect(opponent_move);
+			p = world_copy->prospect();		// Calculate utility from player's point of view for minimax
 			(*state)->utility.value = calc_utility(p);
 			(*state)->utility.state = Utility::ESTIMATED;
 
@@ -151,14 +150,14 @@ void minmaxflood_i::Strategy::move(RCPtr<World> world) {
 						 ( (*state)->parent->utility.value < (*state)->utility.value) ) {
 						(*state)->parent->utility = (*state)->utility;
 						(*state)->parent->next_move = (*state)->last_move;
-						new_leaves.push_back( (*state)->parent );
+						new_leaves.push_back( (*state)->parent );  // check for duplication here
 					}
 				} else {
 					if ( ( (*state)->parent->utility.value < -0.0 ) ||
 						 ( (*state)->parent->utility.value > (*state)->utility.value) ) {
 						(*state)->parent->utility = (*state)->utility;
 						(*state)->parent->next_move = (*state)->last_move;
-						new_leaves.push_back( (*state)->parent );
+						new_leaves.push_back( (*state)->parent ); // check for duplication here
 					}
 				}
 			}
