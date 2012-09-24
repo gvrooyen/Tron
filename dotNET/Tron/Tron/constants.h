@@ -30,6 +30,6 @@ const Move WEST (-1, 0);
 int state_value(string description);
 string state_string(int value);
 
-const float TIME_LIMIT = 444.5;
+const float TIME_LIMIT = 4.5;
 
 #endif
