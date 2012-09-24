@@ -29,6 +29,10 @@ inline Position::Position(int x, int y) {
 	assert(pos.second < world_size);
 }
 
+inline Position::Position(RCPtr<Position> source_position) {
+	pos = source_position->pos;
+}
+
 inline RCPtr<Position> Position::north() {
 	// Returns the coordinates north of the current position, or (-1,-1) if it's at one of the poles.
 	if (at_pole()) {
@@ -169,6 +173,14 @@ World::World(string state_file) {
 	}
 }
 
+World::World(RCPtr<World> source_world) {
+	for (int x = 0; x < world_size; x++)
+		for (int y = 0; y < world_size; y++)
+		  world[x][y] = source_world->world[x][y];
+	pos_player = RCPtr<Position> (new Position(source_world->pos_player));
+	pos_opponent = RCPtr<Position> (new Position(source_world->pos_opponent));
+}
+
 inline int World::state(RCPtr<Position> pos) {
 	if (pos->x() == -1) return EMPTY;
 	return world[pos->x()][pos->y()];	
@@ -240,15 +252,18 @@ int World::liberties(bool opponent) {
 	return result;
 }
 
-set< RCPtr<Position> > World::empty_space() {
-	set< RCPtr<Position> > result;
+RCPtr< set<Move> > World::empty_space() {
+	RCPtr< set<Move> > result;
 	
-	if (state(0,0) == EMPTY) result.insert( RCPtr<Position> (new Position(0,0)) );
-	if (state(0,world_size-1) == EMPTY) result.insert( RCPtr<Position> (new Position(0,world_size-1)) );
+	if (state(0,0) == EMPTY) result->insert(Move(0,0));
+	if (state(0,world_size-1) == EMPTY) result->insert(Move(0,world_size-1));
 	
 	for (int x = 0; x < world_size; x++)
 		for (int y = 0; y < world_size-1; y++)
-			if (state(x,y) == EMPTY) result.insert( RCPtr<Position> (new Position(x,y)) );
+			if (state(x,y) == EMPTY) {
+				cout << "(" << x << "," << y << ") is empty." << endl;
+				result->insert(Move(x,y));
+			}
 	
 	return result;
 }
@@ -266,99 +281,106 @@ int World::count_empty_space() {
 	return result;	
 }
 
-set< RCPtr<Move> > World::valid_moves(bool opponent) {
+RCPtr< set<Move> > World::valid_moves(bool opponent) {
 	RCPtr<Position> pos;
-	RCPtr<Move> new_move;
+	Move new_move;
 	
-	set< RCPtr<Move> > result;
-	set< RCPtr<Position> > adjacent;
-	set< RCPtr<Position> > unclaimed = empty_space();
+	RCPtr< set<Move> > result;
+	set<Move> adjacent;
+	RCPtr< set<Move> > unclaimed = empty_space();
 
 	if (opponent) pos = pos_player;
 	else pos = pos_opponent;
 	
 	if (pos->at_north_pole()) {
 		for (int x = 0; x < world_size; x++)
-			adjacent.insert( RCPtr<Position> (new Position(x,1)) );
+			adjacent.insert(Move(x,1));
 	} else if (pos->at_south_pole()) {
 		for (int x = 0; x < world_size; x++)
-			adjacent.insert( RCPtr<Position> (new Position(x,world_size-2)) );
+			adjacent.insert(Move(x,world_size-2));
 	} else {
-		adjacent.insert( pos->north() );
-		adjacent.insert( pos->south() );
-		adjacent.insert( pos->east() );
-		adjacent.insert( pos->west() );
+		adjacent.insert( Move(pos->north()->to_tuple()) );
+		adjacent.insert( Move(pos->south()->to_tuple()) );
+		adjacent.insert( Move(pos->east()->to_tuple()) );
+		adjacent.insert( Move(pos->west()->to_tuple()) );
 	}
 	
-	for (set< RCPtr<Position> >::iterator a = adjacent.begin(); a != adjacent.end(); a++)
-		if (unclaimed.find(*a) != unclaimed.end())
-			new_move = RCPtr<Move> ( new Move( (*a)->x(), (*a)->y() ) );
-			result.insert(new_move);
+	for (set<Move>::iterator a = adjacent.begin(); a != adjacent.end(); a++) {
+		if (unclaimed->find(*a) != unclaimed->end()) {
+			result->insert(Move(*a));
+		}
+	}
 	
 	return result;	
 }
 
 pair<int,int> World::prospect(bool opponent, int plies) {
-	set< RCPtr<Position> > unclaimed = empty_space();
-	set< RCPtr<Position> > player_frontier;
-	set< RCPtr<Position> > opponent_frontier;
-	set< RCPtr<Position> > player_domain;
-	set< RCPtr<Position> > opponent_domain;
+	RCPtr< set<Move> > unclaimed = empty_space();
+	RCPtr< set<Move> > player_frontier = RCPtr< set<Move> > (new set<Move>);
+	RCPtr< set<Move> > opponent_frontier = RCPtr< set<Move> > (new set<Move>);
+	RCPtr< set<Move> > player_domain = RCPtr< set<Move> > (new set<Move>);
+	RCPtr< set<Move> > opponent_domain = RCPtr< set<Move> > (new set<Move>);
 	
-	player_frontier.insert(pos_player);
-	opponent_frontier.insert(pos_opponent);
+	player_frontier->insert(pos_player->to_tuple());
+	opponent_frontier->insert(pos_opponent->to_tuple());
 	
-	RCPtr< set< RCPtr<Position> > > frontier;
-	RCPtr< set< RCPtr<Position> > > domain;
-	RCPtr< set< RCPtr<Position> > > new_frontier;
+	RCPtr< set<Move> > frontier;
+	RCPtr< set<Move> > domain;
+	RCPtr< set<Move> > new_frontier;
 	
 	int ply_count = 0;
 	
 	while (ply_count < plies) {
-		new_frontier->clear();
+		new_frontier = RCPtr< set<Move> > (new set<Move>);
 		ply_count++;
 		
 		if (opponent) {
-			frontier = RCPtr< set< RCPtr<Position> > > (&opponent_frontier);
-			domain = RCPtr< set< RCPtr<Position> > > (&opponent_domain);
+			frontier = opponent_frontier;
+			domain = opponent_domain;
 		} else {
-			frontier = RCPtr< set< RCPtr<Position> > > (&player_frontier);
-			domain = RCPtr< set< RCPtr<Position> > > (&player_domain);			
+			frontier = player_frontier;
+			domain = player_domain;			
 		}
 		
-		for (set< RCPtr<Position> >::iterator pos = frontier->begin(); pos != frontier->end(); pos++) {
-			set< RCPtr<Position> > adjacent;
+		for (set<Move>::iterator pos = frontier->begin(); pos != frontier->end(); pos++) {
+			set<Move> adjacent;
+			Position p = Position((*pos).first, (*pos).second);
 			
-			if ((*pos)->at_north_pole()) {
+			if (p.at_north_pole()) {
 				for (int x = 0; x < world_size; x++)
-					adjacent.insert( RCPtr<Position> (new Position(x,1)) );
-			} else if ((*pos)->at_south_pole()) {
+					adjacent.insert(Move(x,1));
+			} else if (p.at_south_pole()) {
 				for (int x = 0; x < world_size; x++)
-					adjacent.insert( RCPtr<Position> (new Position(x,world_size-2)) );
+					adjacent.insert(Move(x,world_size-2));
 			} else {
-				adjacent.insert( (*pos)->north() );
-				adjacent.insert( (*pos)->south() );
-				adjacent.insert( (*pos)->east() );
-				adjacent.insert( (*pos)->west() );
+				adjacent.insert(p.north()->to_tuple());
+				adjacent.insert(p.south()->to_tuple());
+				adjacent.insert(p.east()->to_tuple());
+				adjacent.insert(p.west()->to_tuple());
 			}
 			
-			for (set< RCPtr<Position> >::iterator a = adjacent.begin(); a != adjacent.end(); a++)
-				if (unclaimed.find(*a) != unclaimed.end()) {
-					unclaimed.erase(*a);
-					new_frontier->insert(*a);
+			for (set<Move>::iterator a = adjacent.begin(); a != adjacent.end(); a++)
+				if (unclaimed->find(*a) != unclaimed->end()) {
+					unclaimed->erase(*a);
+					new_frontier->insert((*a));
 				}
 			
 			domain->insert(*pos);
 		}
-		
-		frontier = new_frontier;
+
+		if (opponent) {
+			opponent_frontier = new_frontier;
+		} else {
+			player_frontier = new_frontier;
+		}
+
 		opponent = !opponent;		
 	}
 	
-	player_domain.insert(player_frontier.begin(), player_frontier.end());
-	opponent_domain.insert(opponent_frontier.begin(), opponent_frontier.end());
+	player_domain->insert(player_frontier->begin(), player_frontier->end());
+	opponent_domain->insert(opponent_frontier->begin(), opponent_frontier->end());
 	
-	return pair<int,int> (player_domain.size(), opponent_domain.size());
+	return pair<int,int> (player_domain->size(), opponent_domain->size());
 }
 
 void World::save(string filename, int player) {

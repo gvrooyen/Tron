@@ -19,7 +19,7 @@ inline State::State(RCPtr<State> _parent, Move _last_move) {
 }
 
 RCPtr<World> State::render(RCPtr<World> world) {
-	RCPtr<World> result = RCPtr<World> ( new World() );
+	RCPtr<World> result = RCPtr<World> ( new World(world) );
 	State* s = this;
 	bool player_leaf = true;
 	bool opponent_leaf = true;
@@ -80,25 +80,32 @@ void minmaxflood_i::Strategy::move(RCPtr<World> world) {
 
 	set< RCPtr<State> > last_full_ply;
 	int ply = 0;
+	pair<int,int> p;
+
+	cout << "Calculating!" << endl;
 
 	while (( double(clock() - start_time)/CLOCKS_PER_SEC < time_limit ) && (frontier.size() > 0) && (ply < max_plies) ) {
 		set< RCPtr<State> > new_frontier;
 		bool broke_out = false;
 
 		ply++;
+		cout << "Ply " << ply << ", frontier size = " << frontier.size() << endl;
 
 		for (set< RCPtr<State> >::iterator state = frontier.begin(); state != frontier.end(); state++) {
 			bool opponent_move = ((*state)->depth %2 == 0);
 			RCPtr<World> world_copy = (*state)->render(world);
-			set< RCPtr<Move> > valid_moves;
+			RCPtr< set<Move> > valid_moves;
 
 			if ( double(clock() - start_time)/CLOCKS_PER_SEC >= time_limit ) {
 				broke_out = true;
 				break;
 			}
 
-			(*state)->utility.value = calc_utility(world_copy->prospect(opponent_move));
+			p = world_copy->prospect(opponent_move);
+			(*state)->utility.value = calc_utility(p);
 			(*state)->utility.state = Utility::ESTIMATED;
+
+			cout << "Utility: " << (*state)->utility.value << endl;
 
 			if ( (*state)->has_parent() ) {
 				(*state)->parent->utility.value = -1.0;
@@ -109,8 +116,8 @@ void minmaxflood_i::Strategy::move(RCPtr<World> world) {
 			leaves.erase((*state)->parent);
 			valid_moves = world_copy->valid_moves(opponent_move);
 
-			for (set< RCPtr<Move> >::iterator move = valid_moves.begin(); move != valid_moves.end(); move++) {
-				RCPtr<State> new_state = RCPtr<State> ( new State((*state), *(*move)) );
+			for (set<Move>::iterator move = valid_moves->begin(); move != valid_moves->end(); move++) {
+				RCPtr<State> new_state = RCPtr<State> ( new State((*state), (*move)) );
 				new_frontier.insert(new_state);
 			}
 		}

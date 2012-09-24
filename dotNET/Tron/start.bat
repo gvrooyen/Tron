@@ -1,1 +1,1 @@
-.\Release\Tron.exe random %1
+.\Release\Tron.exe minmaxflood_i %1

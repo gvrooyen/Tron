@@ -12,7 +12,7 @@ using namespace std;
 int main (int argc, char *argv[])
 {
 	string strategy, state_file;
-	tron::Strategy S;
+	RCPtr<tron::Strategy> S;
 	RCPtr<World> W;
 
 	srand((unsigned int)time(NULL));
@@ -33,9 +33,10 @@ int main (int argc, char *argv[])
 		cout << endl;
 		return 0;
 	} else if (strategy == "random") {
-		S = tron::Strategy();
+		S = RCPtr<tron::Strategy> (new tron::Strategy());
 	} else if (strategy == "minmaxflood_i") {
-		S = minmaxflood_i::Strategy();
+		cout << "Strategy: minmaxflood_i" << endl;
+		S = RCPtr<tron::Strategy> (new minmaxflood_i::Strategy());
 	} else {
 		cout << "Usage: TRON <strategy> <statefile>" << endl << endl;
 		return 0;
@@ -43,7 +44,7 @@ int main (int argc, char *argv[])
 
 	W = RCPtr<World> ( new World(state_file) );
 	cout << "Contemplating move..." << endl;
-	S.move(W);
+	S->move(W);
 	W->save(state_file);
 	cout << " Done!" << endl << endl;
 }

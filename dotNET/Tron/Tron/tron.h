@@ -16,6 +16,7 @@ class Position {
     Position();
 	Position(pair<int,int> _pos);
 	Position(int x, int y);
+	Position(RCPtr<Position> source_position);
 	bool at_north_pole() { return pos.second == 0; };
 	bool at_south_pole() { return pos.second == world_size - 1; };
 	bool at_pole() { return at_north_pole() || at_south_pole(); };
@@ -39,6 +40,7 @@ class World {
 	RCPtr<Position> pos_opponent;
   public:
 	World(string state_file = "");
+	World(RCPtr<World> source_world);
 	inline int state(RCPtr<Position> pos);
 	inline int state(int x, int y);
 	inline void set_state(RCPtr<Position> pos, int state);
@@ -49,9 +51,9 @@ class World {
 	void move_blue(RCPtr<Position> pos) { move_player(pos); }
 	void move_red(RCPtr<Position> pos) { move_player(pos, true); }
 	int liberties(bool opponent = false);
-	set< RCPtr<Position> > empty_space();
+	RCPtr< set<Move> > empty_space();
 	int count_empty_space();
-	set< RCPtr<Move> > valid_moves(bool opponent = false);
+	RCPtr< set<Move> > valid_moves(bool opponent = false);
 	pair<int,int> prospect(bool opponent = false, int plies = 30);
 	void save(string filename, int player = BLUE);
 	RCPtr<Position> get_pos_player() { return pos_player; }
